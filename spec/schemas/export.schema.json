@@ -29,18 +29,18 @@
   },
   "examples": [
     {
-      "frame_id": "crypto_macro",
+      "frame_id": "account_health",
       "exported_at": "2026-04-17T14:30:00Z",
       "nodes": [
         {
           "id": "f0d2e8a1",
           "type": "frame",
-          "val": { "name": "crypto_macro" },
+          "val": { "name": "account_health" },
           "w": 1.0,
           "decay": "epoch",
           "ttl": null,
           "lineage": null,
-          "tags": ["domain:trading"],
+          "tags": ["domain:accounts"],
           "v": 1,
           "prev": null
         }

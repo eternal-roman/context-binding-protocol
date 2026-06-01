@@ -3,8 +3,8 @@ import { Fact } from "../../src/ingest/types.js";
 
 describe("Fact schema", () => {
   it("accepts a well-formed fact and applies defaults", () => {
-    const f = Fact.parse({ type: "state", val: "BTC up" });
-    expect(f).toMatchObject({ type: "state", val: "BTC up", tags: [], w: 0.6 });
+    const f = Fact.parse({ type: "state", val: "Acme Corp up" });
+    expect(f).toMatchObject({ type: "state", val: "Acme Corp up", tags: [], w: 0.6 });
   });
   it("rejects missing / undefined / null val", () => {
     expect(Fact.safeParse({ type: "state" }).success).toBe(false);

@@ -18,42 +18,42 @@ function newIngestor(): { graph: GraphStore; memory: InMemoryMemoryStore; ingest
 describe("MemoryIngestor.ingestFacts", () => {
   it("writes the graph node AND a projected memory record tagged frame:<id>", async () => {
     const { memory, ingestor } = newIngestor();
-    const r = await ingestor.ingestFacts("trade", [{ type: "state", val: "BTC up", tags: ["live"], w: 0.9 }], tok);
+    const r = await ingestor.ingestFacts("accounts", [{ type: "state", val: "Acme Corp up", tags: ["live"], w: 0.9 }], tok);
     expect(r.ingested).toBe(1);
     expect(r.nodeIds).toHaveLength(1);
     const nodeId = r.nodeIds[0];
     if (!nodeId) throw new Error("no node id");
     const rec = await memory.getById(nodeId);
-    expect(rec?.tags).toContain("frame:trade");
+    expect(rec?.tags).toContain("frame:accounts");
     expect(rec?.tags).toContain("live");
     expect(rec?.embedding).toHaveLength(64);
   });
   it("is idempotent on the frame anchor and dedups exact-duplicate facts (content-addressed)", async () => {
     const { ingestor } = newIngestor();
-    const a = await ingestor.ingestFacts("trade", [{ type: "state", val: "same fact" }], tok);
-    const b = await ingestor.ingestFacts("trade", [{ type: "state", val: "same fact" }], tok);
+    const a = await ingestor.ingestFacts("accounts", [{ type: "state", val: "same fact" }], tok);
+    const b = await ingestor.ingestFacts("accounts", [{ type: "state", val: "same fact" }], tok);
     expect(b.nodeIds[0]).toBe(a.nodeIds[0]); // identical content → identical id, reused not duplicated
   });
   it("does not create a second graph node for a duplicate fact", async () => {
     const { graph, ingestor } = newIngestor();
-    await ingestor.ingestFacts("trade", [{ type: "state", val: "same fact" }], tok);
+    await ingestor.ingestFacts("accounts", [{ type: "state", val: "same fact" }], tok);
     const before = graph.getAllNodes().length;
-    await ingestor.ingestFacts("trade", [{ type: "state", val: "same fact" }], tok);
+    await ingestor.ingestFacts("accounts", [{ type: "state", val: "same fact" }], tok);
     expect(graph.getAllNodes().length).toBe(before); // no new node; anchor + 1 fact only
   });
   it("ignores a client-supplied frame: tag (server owns the partition)", async () => {
     const { memory, ingestor } = newIngestor();
-    const r = await ingestor.ingestFacts("trade", [{ type: "state", val: "x", tags: ["frame:evil", "ok"] }], tok);
+    const r = await ingestor.ingestFacts("accounts", [{ type: "state", val: "x", tags: ["frame:evil", "ok"] }], tok);
     const nodeId = r.nodeIds[0];
     if (!nodeId) throw new Error("no node id");
     const rec = await memory.getById(nodeId);
-    expect(rec?.tags).toContain("frame:trade");
+    expect(rec?.tags).toContain("frame:accounts");
     expect(rec?.tags).not.toContain("frame:evil");
     expect(rec?.tags).toContain("ok");
   });
   it("routes invalid facts to skipped without aborting valid ones", async () => {
     const { ingestor } = newIngestor();
-    const r = await ingestor.ingestFacts("trade", [
+    const r = await ingestor.ingestFacts("accounts", [
       { type: "state", val: "good" },
       { type: "bogus" as unknown as "state", val: "bad" },
     ], tok);
@@ -65,7 +65,7 @@ describe("MemoryIngestor.ingestFacts", () => {
   });
   it("stores two distinct facts and makes both retrievable (loop accumulation)", async () => {
     const { memory, ingestor } = newIngestor();
-    const r = await ingestor.ingestFacts("trade", [
+    const r = await ingestor.ingestFacts("accounts", [
       { type: "state", val: "alpha fact" },
       { type: "prior", val: "beta rule" },
     ], tok);
@@ -78,7 +78,7 @@ describe("MemoryIngestor.ingestFacts", () => {
   });
   it("does NOT project the frame anchor into the memory index", async () => {
     const { memory, ingestor } = newIngestor();
-    await ingestor.ingestFacts("trade", [{ type: "state", val: "only fact" }], tok);
+    await ingestor.ingestFacts("accounts", [{ type: "state", val: "only fact" }], tok);
     const all = await memory.query({}); // returns all stored records
     expect(all).toHaveLength(1); // just the fact — the frame anchor is structural, not a memory
   });

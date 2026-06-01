@@ -41,9 +41,9 @@ describe("Tokenizer (G4)", () => {
       const payload = JSON.stringify({
         id: "a7c3f1e2",
         type: "entity",
-        val: "BTC",
+        val: "Acme Corp",
         w: 0.9,
-        tags: ["domain:trading"],
+        tags: ["domain:accounts"],
       });
       const count = o200kTokenizer.countTokens(payload);
       // A typical small JSON object should be ~20-40 tokens

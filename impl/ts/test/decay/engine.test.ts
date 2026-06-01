@@ -15,7 +15,7 @@ describe("DecayEngine (G2)", () => {
     decay: "epoch",
     ttl: null,
     lineage: null,
-    tags: ["domain:trading"],
+    tags: ["domain:accounts"],
     v: 1,
     prev: null,
   };
@@ -23,7 +23,7 @@ describe("DecayEngine (G2)", () => {
   const entityNode: CbpNode = {
     id: "a0000001",
     type: "entity",
-    val: "BTC",
+    val: "Acme Corp",
     w: 1.0,
     decay: "epoch",
     ttl: null,
@@ -49,7 +49,7 @@ describe("DecayEngine (G2)", () => {
   const noneNode: CbpNode = {
     id: "c0000001",
     type: "prior",
-    val: { regime: "risk_on" },
+    val: { renewal_outlook: "at_risk" },
     w: 0.5,
     decay: "none",
     ttl: null,
@@ -84,8 +84,8 @@ describe("DecayEngine (G2)", () => {
   describe("weight decay", () => {
     it("decays epoch-type nodes by decay_factor", () => {
       engine.sweep(store);
-      const btc = store.getNode("a0000001");
-      expect(btc?.w).toBeCloseTo(0.85, 10);
+      const acme = store.getNode("a0000001");
+      expect(acme?.w).toBeCloseTo(0.85, 10);
     });
 
     it("does NOT decay event-type nodes", () => {
@@ -96,21 +96,21 @@ describe("DecayEngine (G2)", () => {
 
     it("does NOT decay none-type nodes", () => {
       engine.sweep(store);
-      const regime = store.getNode("c0000001");
-      expect(regime?.w).toBe(0.5);
+      const renewal_outlook = store.getNode("c0000001");
+      expect(renewal_outlook?.w).toBe(0.5);
     });
 
     it("compounds decay across multiple epochs", () => {
       engine.sweep(store);
       engine.sweep(store);
-      const btc = store.getNode("a0000001");
-      expect(btc?.w).toBeCloseTo(1.0 * 0.85 * 0.85, 10);
+      const acme = store.getNode("a0000001");
+      expect(acme?.w).toBeCloseTo(1.0 * 0.85 * 0.85, 10);
     });
 
     it("bumps v on each decay", () => {
       engine.sweep(store);
-      const btc = store.getNode("a0000001");
-      expect(btc?.v).toBe(2);
+      const acme = store.getNode("a0000001");
+      expect(acme?.v).toBe(2);
     });
   });
 

@@ -591,7 +591,15 @@ export function createCbpServer(config: CbpServerConfig): CbpServer {
       return reply.code(404).send({ error: `Node not found: ${request.params.id}` });
     }
     const frame = findFrameForNode(existing, config.frames, store);
-    if (frame && !checkAcl(frame, request)) {
+    if (!frame) {
+      // A node not resolvable to any configured frame must not be deletable by a
+      // bearer token that holds no ACL for it. Deny (mirrors GET/PATCH 404) rather
+      // than letting a `frame && ...` short-circuit skip the ACL check entirely.
+      return reply
+        .code(404)
+        .send({ error: `Node not in any configured frame: ${request.params.id}` });
+    }
+    if (!checkAcl(frame, request)) {
       return reply
         .code(403)
         .send({ error: "Insufficient ACL for this node's frame" });

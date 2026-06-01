@@ -41,10 +41,10 @@ Content-Type: application/cbp+json; tier=condensed
 
 Used on first encounter with a frame in a conversation. All fields explicit. Inheritance resolved and shown. Every node carries its complete state.
 
-### Wire example (trading domain)
+### Wire example (accounts domain)
 
 ```json
-{"frame":{"id":"crypto_macro","max_token_budget":400,"root_decay":"epoch","root_weight":1.0,"tokenizer":"o200k_base"},"nodes":[{"decay":"epoch","id":"a7c3f1e2","lineage":"f0d2e8a1","prev":null,"tags":["domain:trading","asset:crypto"],"type":"entity","v":1,"val":"BTC","w":0.9},{"decay":"event","id":"b2c4d5e6","lineage":"a7c3f1e2","prev":null,"tags":["domain:trading","metric:price"],"type":"state","v":3,"val":{"price":68420,"timestamp":"2026-04-11T14:30:00Z"},"w":0.9}],"edges":[{"conditional":{"field":"prior:regime.val","op":"eq","value":"risk_on"},"decay":"none","id":"f1a2b3c4","prev":null,"rel":"correlates","src":"a7c3f1e2","strength":0.85,"tgt":"c3d5e6f7","v":1,"w":1.0}],"tier":"full","v":1}
+{"frame":{"id":"account_health","max_token_budget":400,"root_decay":"epoch","root_weight":1.0,"tokenizer":"o200k_base"},"nodes":[{"decay":"epoch","id":"a7c3f1e2","lineage":"f0d2e8a1","prev":null,"tags":["domain:accounts","tier:enterprise"],"type":"entity","v":1,"val":"Acme Corp","w":0.9},{"decay":"event","id":"b2c4d5e6","lineage":"a7c3f1e2","prev":null,"tags":["domain:accounts","metric:mrr"],"type":"state","v":3,"val":{"mrr":48200},"w":0.9}],"edges":[{"conditional":{"field":"prior:d0f6a4b5.val.renewal_outlook","op":"eq","value":"at_risk"},"decay":"none","id":"f1a2b3c4","prev":null,"rel":"correlates","src":"a7c3f1e2","strength":0.85,"tgt":"c3d5e6f7","v":1,"w":1.0}],"tier":"full","v":1}
 ```
 
 ### Wire example (clinical domain)
@@ -118,7 +118,7 @@ Typical token count: **~20 tokens** for a 12-node frame.
 
 ### Human-readable rendering (non-normative)
 
-The v0.1 spec showed a textual Signal example: `"BTC:0.9↑ ETH:0.8→ SOL:0.6↓ | corr:2 cause:1"`. This is a **human-readable rendering** suitable for display or logging, **not the wire format**. Implementations may produce this as a convenience output, but it is not part of the protocol's serialization contract. The wire format for Signal tier is JSON as shown above.
+The v0.1 spec showed a textual Signal example: `"Acme:0.9↑ Globex:0.8→ Initech:0.6↓ | corr:2 cause:1"`. This is a **human-readable rendering** suitable for display or logging, **not the wire format**. Implementations may produce this as a convenience output, but it is not part of the protocol's serialization contract. The wire format for Signal tier is JSON as shown above.
 
 ## 6. Optional Encodings (Non-Normative)
 

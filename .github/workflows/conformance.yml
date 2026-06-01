@@ -20,7 +20,7 @@ jobs:
         run: |
           set -euo pipefail
 
-          REQUIRED_DOMAINS=("trading" "clinical" "devops" "legal")
+          REQUIRED_DOMAINS=("accounts" "clinical" "devops" "legal")
           failed=0
 
           for domain in "${REQUIRED_DOMAINS[@]}"; do
@@ -44,7 +44,7 @@ jobs:
             echo ""
             echo "ERROR: One or more required domains are missing vectors."
             echo "CBP is domain-general (cbp-architecture.html §I):"
-            echo "  All four domains (trading, clinical, devops, legal) are required."
+            echo "  All four domains (accounts, clinical, devops, legal) are required."
             exit 1
           fi
 

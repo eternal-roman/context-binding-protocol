@@ -6,11 +6,11 @@ describe("MemoryRecord projection schema", () => {
     const rec = {
       id: "a7c3f1e2",
       nodeType: "state" as const,
-      fidelities: { full: "BTC price 68420 at 14:30Z", condensed: "BTC 68420", signal: "state:domain:trading" },
+      fidelities: { full: "Acme Corp price 68420 at 14:30Z", condensed: "Acme Corp 68420", signal: "state:domain:accounts" },
       tokenCost: { full: 9, condensed: 3, signal: 4 },
       embedding: [0.1, 0.2, 0.3],
       embeddingModel: "hashing-v1@64",
-      tags: ["domain:trading"],
+      tags: ["domain:accounts"],
       lineage: "f0d2e8a1",
       w: 0.9,
     };

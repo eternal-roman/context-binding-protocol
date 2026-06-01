@@ -36,7 +36,7 @@ describe("append-mostly history invariants", () => {
 
   describe("prev is never self-referential", () => {
     it("metadata-only update preserves prev (does not point to self)", () => {
-      const original = insertEntity("BTC"); // prev = null
+      const original = insertEntity("Acme Corp"); // prev = null
       const updated = store.upsertNode(original.id, { w: 0.5 }, original.v);
 
       expect(updated.id).toBe(original.id);
@@ -47,8 +47,8 @@ describe("append-mostly history invariants", () => {
     });
 
     it("metadata update after a content mutation preserves the content prev", () => {
-      const v1 = insertEntity("BTC");
-      const v2 = store.upsertNode(v1.id, { val: "ETH" }, v1.v); // content → new id
+      const v1 = insertEntity("Acme Corp");
+      const v2 = store.upsertNode(v1.id, { val: "Globex Inc" }, v1.v); // content → new id
       expect(v2.prev).toBe(v1.id);
 
       const v2meta = store.upsertNode(v2.id, { w: 0.3 }, v2.v); // metadata-only
@@ -58,7 +58,7 @@ describe("append-mostly history invariants", () => {
     });
 
     it("prev chain terminates (no cycle) after repeated metadata edits", () => {
-      let node = insertEntity("BTC");
+      let node = insertEntity("Acme Corp");
       for (let i = 0; i < 5; i++) {
         node = store.upsertNode(node.id, { w: (node.w ?? 1) * 0.9 }, node.v);
       }
@@ -78,8 +78,8 @@ describe("append-mostly history invariants", () => {
 
   describe("live vs historical nodes", () => {
     it("content mutation supersedes the old version (excluded from live set)", () => {
-      const v1 = insertEntity("BTC");
-      const v2 = store.upsertNode(v1.id, { val: "ETH" }, v1.v);
+      const v1 = insertEntity("Acme Corp");
+      const v2 = store.upsertNode(v1.id, { val: "Globex Inc" }, v1.v);
 
       // both retained — append-mostly
       expect(store.getNode(v1.id)).toBeDefined();
@@ -132,8 +132,8 @@ describe("append-mostly history invariants", () => {
     });
 
     it("getLiveNodes reconstructs heads after a bulk load (hydrate path)", () => {
-      const v1 = insertEntity("BTC");
-      const v2 = store.upsertNode(v1.id, { val: "ETH" }, v1.v);
+      const v1 = insertEntity("Acme Corp");
+      const v2 = store.upsertNode(v1.id, { val: "Globex Inc" }, v1.v);
       const snapshot = store.getAllNodes();
 
       const fresh = new GraphStore();

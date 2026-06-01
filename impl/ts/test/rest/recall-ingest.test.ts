@@ -33,12 +33,12 @@ const auth = (t: string): { authorization: string } => ({ authorization: `Bearer
 describe("POST /v1/frame/:id/ingest + /recall", () => {
   it("ingests facts then recalls them as a budget-bounded block", async () => {
     const ing = await server.app.inject({ method: "POST", url: "/v1/frame/fa/ingest", headers: auth(TOKEN_A),
-      payload: { facts: [{ type: "state", val: "BTC price climbing", w: 0.9 }, { type: "prior", val: "No Friday deploys" }] } });
+      payload: { facts: [{ type: "state", val: "Acme Corp price climbing", w: 0.9 }, { type: "prior", val: "No Friday deploys" }] } });
     expect(ing.statusCode).toBe(200);
     expect(JSON.parse(ing.body).ingested).toBe(2);
 
     const rec = await server.app.inject({ method: "POST", url: "/v1/frame/fa/recall", headers: auth(TOKEN_A),
-      payload: { query: "bitcoin price" } });
+      payload: { query: "account usage price" } });
     expect(rec.statusCode).toBe(200);
     const body = JSON.parse(rec.body);
     expect(body.entries.length).toBeGreaterThan(0);
@@ -58,9 +58,9 @@ describe("POST /v1/frame/:id/ingest + /recall", () => {
 
   it("frame partition isolation: beta cannot recall alpha's facts (governance)", async () => {
     await server.app.inject({ method: "POST", url: "/v1/frame/fb/ingest", headers: auth(TOKEN_B), payload: { facts: [{ type: "state", val: "clinical vitals only" }] } });
-    const rec = await server.app.inject({ method: "POST", url: "/v1/frame/fb/recall", headers: auth(TOKEN_B), payload: { query: "bitcoin price climbing" } });
+    const rec = await server.app.inject({ method: "POST", url: "/v1/frame/fb/recall", headers: auth(TOKEN_B), payload: { query: "account usage price climbing" } });
     const texts = JSON.parse(rec.body).entries.map((e: { text: string }) => e.text);
-    expect(texts.join(" ")).not.toContain("BTC price climbing"); // alpha's fact never leaks into fb
+    expect(texts.join(" ")).not.toContain("Acme Corp price climbing"); // alpha's fact never leaks into fb
   });
 
   it("401 without a bearer token", async () => {

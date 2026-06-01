@@ -31,7 +31,7 @@ describe("prototypal inheritance — omit ⇒ inherit", () => {
     });
     const child = store.insertNode({
       type: "entity",
-      val: "BTC",
+      val: "Acme Corp",
       lineage: root.id,
       tags: [],
     });

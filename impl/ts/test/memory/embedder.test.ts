@@ -4,16 +4,16 @@ import { HashingEmbedder, cosine } from "../../src/memory/embedder.js";
 describe("HashingEmbedder", () => {
   it("is deterministic and unit-norm", async () => {
     const e = new HashingEmbedder(64);
-    const a = await e.embed("bitcoin price");
-    const b = await e.embed("bitcoin price");
+    const a = await e.embed("account usage");
+    const b = await e.embed("account usage");
     expect(a).toEqual(b);
     const norm = Math.sqrt(a.reduce((s, x) => s + x * x, 0));
     expect(norm).toBeCloseTo(1, 5);
   });
   it("scores related text higher than unrelated (bag-of-words overlap)", async () => {
     const e = new HashingEmbedder(256);
-    const q = await e.embed("bitcoin price rising");
-    const near = await e.embed("bitcoin price climbing");
+    const q = await e.embed("account usage rising");
+    const near = await e.embed("account usage climbing");
     const far = await e.embed("clinical patient intake vitals");
     expect(cosine(q, near)).toBeGreaterThan(cosine(q, far));
   });

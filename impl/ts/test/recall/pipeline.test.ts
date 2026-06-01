@@ -13,23 +13,23 @@ const node = (id: string, val: string, tags: string[]): ResolvedNode =>
 async function seeded(): Promise<RecallPipeline> {
   const embedder = new HashingEmbedder(256);
   const memory = new InMemoryMemoryStore();
-  await memory.upsert(await projectNode(node("aaaaaaaa", "bitcoin price climbing fast", ["frame:trade"]), { tokenizer: tok, embedder }));
-  await memory.upsert(await projectNode(node("bbbbbbbb", "patient blood pressure vitals", ["frame:trade"]), { tokenizer: tok, embedder }));
-  await memory.upsert(await projectNode(node("cccccccc", "bitcoin rally continues", ["frame:other"]), { tokenizer: tok, embedder }));
+  await memory.upsert(await projectNode(node("aaaaaaaa", "account usage climbing fast", ["frame:accounts"]), { tokenizer: tok, embedder }));
+  await memory.upsert(await projectNode(node("bbbbbbbb", "patient blood pressure vitals", ["frame:accounts"]), { tokenizer: tok, embedder }));
+  await memory.upsert(await projectNode(node("cccccccc", "account rally continues", ["frame:other"]), { tokenizer: tok, embedder }));
   return new RecallPipeline({ embedder, memory, llm: new EchoLlmClient() });
 }
 
 describe("RecallPipeline", () => {
   it("recall scopes by scopeTags and ranks by relevance within scope", async () => {
     const p = await seeded();
-    const ctx = await p.recall("bitcoin price rising", { scopeTags: ["frame:trade"], budget: 1000, tokenizer: tok });
+    const ctx = await p.recall("account usage rising", { scopeTags: ["frame:accounts"], budget: 1000, tokenizer: tok });
     expect(ctx.entries[0]?.id).toBe("aaaaaaaa");        // best in-scope match
     expect(ctx.entries.map((e) => e.id)).not.toContain("cccccccc"); // out of scope, excluded
     expect(ctx.tokensUsed).toBeLessThanOrEqual(1000);
   });
   it("ask runs recall then the LlmClient, returning answer + context", async () => {
     const p = await seeded();
-    const out = await p.ask("bitcoin price rising", { scopeTags: ["frame:trade"], budget: 1000, tokenizer: tok });
+    const out = await p.ask("account usage rising", { scopeTags: ["frame:accounts"], budget: 1000, tokenizer: tok });
     expect(out.context.entries.length).toBeGreaterThan(0);
     expect(out.answer).toContain(out.context.block);   // Echo returns the block
   });
@@ -40,7 +40,7 @@ describe("RecallPipeline", () => {
   });
   it("filterTags AND-narrows within scope (a tag no in-scope record has yields empty)", async () => {
     const p = await seeded();
-    const ctx = await p.recall("bitcoin price rising", { scopeTags: ["frame:trade"], filterTags: ["nonexistent"], budget: 1000, tokenizer: tok });
+    const ctx = await p.recall("account usage rising", { scopeTags: ["frame:accounts"], filterTags: ["nonexistent"], budget: 1000, tokenizer: tok });
     expect(ctx.entries).toHaveLength(0);
   });
   it("ask throws when no LlmClient is configured", async () => {

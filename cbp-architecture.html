@@ -335,7 +335,7 @@
   <p>The protocol encodes <strong>contextual state</strong> — entities, their relationships, their relevance weights, and their decay properties — in a format designed for LLM consumption. Context is inherited downward, conditional on state, and compressible across conversation turns.</p>
 
   <h3>Scope and Applicability</h3>
-  <p>CBP is a <strong>domain-general protocol</strong>. It applies to any business that has context-dependent communication with AI systems and needs a structured, state-aware, token-efficient way to bind that context. The cryptocurrency examples used throughout this document (BTC, ETH, market regimes) reflect the origin context in which CBP was first conceived; they are illustrative, not prescriptive. Section V enumerates six application domains — and the protocol is designed to extend to any business domain with the same structural needs. CBP is a horizontal protocol with a trading origin story, not a trading protocol.</p>
+  <p>CBP is a <strong>domain-general protocol</strong>. It applies to any business that has context-dependent communication with AI systems and needs a structured, state-aware, token-efficient way to bind that context. The examples used throughout this document (customer accounts, renewal outlooks, account health) are illustrative, not prescriptive. Section V enumerates six application domains, and the protocol is designed to extend to any business domain with the same structural needs. CBP is a horizontal protocol: a way to deliver token-budgeted, state-conditioned business context to AI systems.</p>
 
   <div class="grid-2">
     <div class="metric">
@@ -365,22 +365,22 @@
       <tr>
         <td>entity</td>
         <td>A thing that exists in the domain. The noun. Can hold state children.</td>
-        <td>BTC, user:jon, ticker:AAPL, patient:4821</td>
+        <td>account:acme, user:jon, deal:initech, patient:4821</td>
       </tr>
       <tr>
         <td>state</td>
         <td>A measurable property of an entity at a point in time. Always a child.</td>
-        <td>price, momentum, sentiment, risk_score</td>
+        <td>mrr, seats_active, sentiment, health_score</td>
       </tr>
       <tr>
         <td>prior</td>
         <td>A belief about an entity or state before evidence. The Bayesian input.</td>
-        <td>regime:risk_on, sector:bullish, correlation_stable</td>
+        <td>renewal_outlook:at_risk, segment:enterprise, usage_trend_stable</td>
       </tr>
       <tr>
         <td>frame</td>
         <td>A container that scopes a subset of the graph for injection. The viewport.</td>
-        <td>frame:crypto_macro, frame:patient_intake</td>
+        <td>frame:account_health, frame:patient_intake</td>
       </tr>
     </table>
   </div>
@@ -394,7 +394,7 @@
   "decay":   "epoch|event|none", // when staleness triggers
   "ttl":     &lt;seconds | null&gt;,   // hard expiry
   "lineage": "parent_id | null", // inheritance chain; null for frame roots
-  "tags":    ["domain:trading", "severity:high"],
+  "tags":    ["domain:accounts", "severity:high"],
   "v":       1,                  // optimistic concurrency counter
   "prev":    "prior_id | null"   // previous version of same logical node (G9)
 }</pre>
@@ -410,22 +410,22 @@
   <h3>Inheritance Resolution</h3>
   <p>A child node inherits <strong>all fields</strong> from its parent except those it explicitly declares. Resolution walks upward through <code>lineage</code> until it hits a <code>frame</code> node (the root). This is prototypal — not class-based.</p>
 
-  <div class="diagram"><span class="hl">frame:crypto_macro</span>  w:1.0  decay:epoch  tags:[domain:crypto]
+  <div class="diagram"><span class="hl">frame:account_health</span>  w:1.0  decay:epoch  tags:[domain:accounts]
   │
-  ├─ <span class="h2">entity:BTC</span>  (inherits w:1.0, decay:epoch, tags)
-  │   ├─ <span class="h3">state:price</span>     val:68420  w:0.9  decay:event  ← overrides
-  │   ├─ <span class="h3">state:momentum</span>  val:0.72   ← inherits w:1.0, decay:epoch
-  │   └─ <span class="hr">prior:regime</span>    val:risk_on  w:0.6  ttl:3600
+  ├─ <span class="h2">entity:Acme Corp</span>  (inherits w:1.0, decay:epoch, tags)
+  │   ├─ <span class="h3">state:mrr</span>          val:48200  w:0.9  decay:event  ← overrides
+  │   ├─ <span class="h3">state:health_score</span>  val:0.72   ← inherits w:1.0, decay:epoch
+  │   └─ <span class="hr">prior:renewal</span>     val:at_risk  w:0.6  ttl:3600
   │
-  ├─ <span class="h2">entity:ETH</span>  w:0.8  ← overrides, inherits decay, tags
-  │   ├─ <span class="h3">state:price</span>     val:3180
-  │   └─ <span class="h3">state:gas</span>      val:12gwei  decay:event  tags:[+infra]
+  ├─ <span class="h2">entity:Globex Inc</span>  w:0.8  ← overrides, inherits decay, tags
+  │   ├─ <span class="h3">state:mrr</span>          val:31800
+  │   └─ <span class="h3">state:seats</span>        val:64  decay:event  tags:[+usage]
   │
-  └─ <span class="hl">edge</span>  src:BTC  tgt:ETH  rel:correlates  strength:0.85
-      conditional: regime=risk_on</div>
+  └─ <span class="hl">edge</span>  src:Acme Corp  tgt:Globex Inc  rel:correlates  strength:0.85
+      conditional: renewal_outlook=at_risk</div>
 
   <div class="callout">
-    <strong>Key insight:</strong> In this tree, <code>state:momentum</code> under BTC never declares <code>w</code>, <code>decay</code>, or <code>tags</code> — it inherits all three from the frame root through its entity parent. Serialized, those inherited fields are omitted, so the node is smaller than a fully specified one.
+    <strong>Key insight:</strong> In this tree, <code>state:health_score</code> under Acme Corp never declares <code>w</code>, <code>decay</code>, or <code>tags</code> — it inherits all three from the frame root through its entity parent. Serialized, those inherited fields are omitted, so the node is smaller than a fully specified one.
   </div>
 </div>
 
@@ -451,18 +451,18 @@
 
   <h3>Conditional Edge Activation</h3>
   <pre>{
-  "src": "BTC",
-  "tgt": "ETH",
+  "src": "Acme Corp",
+  "tgt": "Globex Inc",
   "rel": "correlates",
   "strength": 0.85,
   "conditional": {
-    "field": "prior:regime.val",
+    "field": "prior:renewal.val",
     "op": "eq",
-    "value": "risk_on"
+    "value": "at_risk"
   }
 }</pre>
 
-  <p>When the regime prior shifts to <code>risk_off</code>, this edge goes <strong>dormant</strong>. It's excluded from frame serialization. The LLM never sees it — and never wastes tokens reasoning about a relationship that doesn't apply in the current context.</p>
+  <p>When the renewal_outlook prior shifts to <code>healthy</code>, this edge goes <strong>dormant</strong>. It's excluded from frame serialization. The LLM never sees it — and never wastes tokens reasoning about a relationship that doesn't apply in the current context.</p>
 
   <h4>Full Conditional Grammar</h4>
   <p>Conditionals support boolean composition. The complete grammar:</p>
@@ -503,7 +503,7 @@ op := "eq" | "ne" | "lt" | "lte" | "gt" | "gte"
   <div class="card">
     <div class="card-title">TIER 3: SIGNAL <span class="tag">Reference only</span></div>
     <p>Node IDs + weights + active edge directions. A fingerprint. Useful when the LLM has already internalized the frame structure and only needs to know <em>what changed</em>.</p>
-    <pre>"BTC:0.9↑ ETH:0.8→ SOL:0.6↓ | corr:2 cause:1"</pre>
+    <pre>"Acme:0.9↑ Globex:0.8→ Initech:0.6↓ | corr:2 cause:1"</pre>
   </div>
 
   <h3>Tier Negotiation Flow</h3>
@@ -519,7 +519,7 @@ op := "eq" | "ne" | "lt" | "lte" | "gt" | "gte"
   <p>The client can request a specific tier, or send <code>tier: "auto"</code> — the server decides based on whether the conversation has previously received a Full serialization of that frame.</p>
 
   <div class="callout">
-    <strong>Wire format.</strong> The canonical wire format for all tiers is <strong>JSON Canonical Form</strong> (RFC 8785) — deterministic key ordering, normalized numbers, no whitespace outside strings. This guarantees byte-identical output across implementations, which is required for content-addressable ids (BLAKE3) and conformance testing. The textual Signal example above (<code>"BTC:0.9↑ ETH:0.8→"</code>) is a human-readable rendering, not the wire format. Full wire-format specification: <code>spec/wire-format.md</code>.
+    <strong>Wire format.</strong> The canonical wire format for all tiers is <strong>JSON Canonical Form</strong> (RFC 8785) — deterministic key ordering, normalized numbers, no whitespace outside strings. This guarantees byte-identical output across implementations, which is required for content-addressable ids (BLAKE3) and conformance testing. The textual Signal example above (<code>"Acme:0.9↑ Globex:0.8→"</code>) is a human-readable rendering, not the wire format. Full wire-format specification: <code>spec/wire-format.md</code>.
   </div>
 </div>
 
@@ -527,15 +527,15 @@ op := "eq" | "ne" | "lt" | "lte" | "gt" | "gte"
 <h2>V. Application Domains</h2>
 <div class="section">
 
-  <h3>1. Algorithmic Trading</h3>
+  <h3>1. Customer Account Health (B2B SaaS)</h3>
   <div class="tag-row">
     <span class="tag-pill gold">high value</span>
-    <span class="tag-pill blue">real-time decay</span>
-    <span class="tag-pill green">regime-conditional</span>
+    <span class="tag-pill blue">usage decay</span>
+    <span class="tag-pill green">renewal-conditional</span>
   </div>
-  <p>The origin use case. A CBP frame encodes market regime, cross-asset correlations, momentum states, and Bayesian priors. The trading agent consumes a Condensed frame each tick, receiving only the delta. Conditional edges activate/deactivate based on regime classification — the agent literally sees a different market structure when conditions shift.</p>
+  <p>A CBP frame encodes a customer account, its usage and health metrics, cross-account patterns, and renewal-risk priors. A customer-success copilot consumes a Condensed frame each session, receiving only the delta. Conditional edges activate/deactivate based on renewal outlook — the agent sees a different account structure the moment an account tips into churn risk.</p>
   <div class="callout">
-    <strong>Node structure:</strong> frame:market → entities (assets) → states (price, vol, momentum) + priors (regime, trend). Edges: correlations and causations between macro signals and price action. Decay: event-driven on price, epoch-driven on regime.
+    <strong>Node structure:</strong> frame:account_health → entities (accounts) → states (mrr, seats_active, health_score) + priors (renewal_outlook, expansion_signal). Edges: correlations and dependencies between accounts and customer-success playbooks. Decay: event-driven on usage, epoch-driven on renewal outlook.
   </div>
 
   <h3>2. Clinical Decision Support</h3>
@@ -618,10 +618,10 @@ op := "eq" | "ne" | "lt" | "lte" | "gt" | "gte"
   <div class="card">
     <div class="card-title">MODE 1: SYSTEM PROMPT INJECTION <span class="tag">Simplest</span></div>
     <p>The consuming app fetches a serialized frame and prepends it to the system prompt. The LLM reads context as structured text. No protocol awareness needed on the LLM side — it just reads well-organized data.</p>
-    <pre>GET /v1/frame/crypto_macro?tier=full
+    <pre>GET /v1/frame/account_health?tier=full
 
 → Injected into system prompt as:
-  &lt;context_frame id="crypto_macro" v="1"&gt;
+  &lt;context_frame id="account_health" v="1"&gt;
     ... serialized CBP payload ...
   &lt;/context_frame&gt;</pre>
   </div>
@@ -642,11 +642,11 @@ op := "eq" | "ne" | "lt" | "lte" | "gt" | "gte"
 
   <div class="card">
     <div class="card-title">MODE 3: STREAMING DELTA <span class="tag">Real-time</span></div>
-    <p>WebSocket connection pushes Condensed or Signal tier updates as the underlying data changes. For trading, incident response, or any domain where context shifts faster than conversation turns.</p>
-    <pre>ws://cbp-server/v1/stream/crypto_macro
+    <p>WebSocket connection pushes Condensed or Signal tier updates as the underlying data changes. For account health, incident response, or any domain where context shifts faster than conversation turns.</p>
+    <pre>ws://cbp-server/v1/stream/account_health
 
-→ { "delta": { "BTC.momentum": 0.68, "regime": "risk_off" },
-    "edges_deactivated": ["BTC→ETH:correlates"],
+→ { "delta": { "Acme.health_score": 0.68, "renewal_outlook": "healthy" },
+    "edges_deactivated": ["Acme→Globex:correlates"],
     "tier": "signal" }</pre>
   </div>
 
@@ -655,13 +655,13 @@ op := "eq" | "ne" | "lt" | "lte" | "gt" | "gte"
     <p>For autonomous agents, the CBP client runs in-process. The agent reads and <strong>writes</strong> to the graph — recording its own outputs as prior nodes, updating state based on actions taken. The graph becomes the agent's persistent working memory.</p>
     <pre>import { CBPClient } from '@cbp/sdk';
 
-const ctx = new CBPClient('crypto_macro');
+const ctx = new CBPClient('account_health');
 const frame = await ctx.resolve({ tier: 'condensed' });
 
 // Agent takes action, records result as prior
 await ctx.upsert({
   type: 'prior',
-  lineage: 'entity:BTC',
+  lineage: 'entity:Acme Corp',
   val: { action: 'long', confidence: 0.74 },
   decay: 'event',
   ttl: 7200
@@ -701,16 +701,16 @@ await ctx.upsert({
   <h4>2. Frame Configuration</h4>
   <pre>{
   "frame": {
-    "id": "crypto_macro",
-    "domain_tags": ["crypto", "macro", "trading"],
+    "id": "account_health",
+    "domain_tags": ["accounts", "customer-success"],
     "root_weight": 1.0,
     "root_decay": "epoch",
-    "refresh_policy": "on_demand | interval:300 | event:price_update",
+    "refresh_policy": "on_demand | interval:300 | event:usage_update",
     "max_token_budget": 400,  // hard cap for serialized output
     "inheritance_mode": "prototypal",  // or "override_only"
     "conditional_edge_eval": "eager",  // or "lazy"
     "tokenizer": "o200k_base",        // configurable per frame (G4)
-    "acl_tags": ["acl:desk_alpha"]    // bearer-token ACL (G8 v0.x)
+    "acl_tags": ["acl:success_team_alpha"]    // bearer-token ACL (G8 v0.x)
   }
 }</pre>
   <p>The <code>tokenizer</code> field selects the token-counting strategy for budget enforcement. Implementations register tokenizers by string identifier; the default <code>o200k_base</code> is a reference, not a mandate. The <code>acl_tags</code> field controls per-frame access: a request's bearer token must match at least one ACL tag to access the frame; an empty array means accessible to all authenticated tokens. The formal schema is at <code>spec/schemas/frame.schema.json</code>.</p>
@@ -742,7 +742,7 @@ await ctx.upsert({
 (raw feeds, APIs)       (context binding)        (LLM apps)
 
 ┌─────────────┐      ┌─────────────────┐     ┌──────────────┐
-│ Market data  │─────▶│  Ingest         │     │ Trading bot  │
+│ Product use  │─────▶│  Ingest         │     │ CS copilot   │
 │ APIs         │      │  ↓              │     │              │
 └─────────────┘      │  Normalize      │────▶│ Copilot      │
 ┌─────────────┐      │  ↓              │     │              │
@@ -755,8 +755,8 @@ await ctx.upsert({
 
 CBP does NOT:                CBP DOES:
 • Store raw data             • Bind meaning to data
-• Provide market feeds       • Weight relevance
-• Execute trades             • Encode relationships
+• Provide raw feeds          • Weight relevance
+• Take actions               • Encode relationships
 • Run the LLM                • Compress for context windows
 • Replace MCP                • Complement MCP</pre></div>
 
@@ -823,7 +823,7 @@ CBP does NOT:                CBP DOES:
   </div>
 
   <div class="callout">
-    <strong>Authentication (G8 v0.x).</strong> All endpoints <em>except <code>/healthz</code></em> require a Bearer token in the <code>Authorization</code> header. Per-frame access is controlled via <code>acl_tags</code> in the frame configuration — a request's token must match at least one ACL tag to access a restricted frame. Frames with no ACL tags are accessible to all authenticated tokens. mTLS and federation key models are deferred to v1.0. See <code>spec/schemas/frame.schema.json</code>.
+    <strong>Authentication (G8 v0.x).</strong> All endpoints <em>except <code>/healthz</code></em> require a Bearer token in the <code>Authorization</code> header. Per-frame access is controlled via <code>acl_tags</code> in the frame configuration — a request's token must match at least one ACL tag to access a restricted frame. Frames with no ACL tags are accessible to all authenticated tokens. mTLS and finer-grained auth (per-scope tokens, rotation, read-vs-write roles) are deferred to a later version. See <code>spec/schemas/frame.schema.json</code>.
   </div>
 
   <div class="callout blue">
@@ -831,7 +831,7 @@ CBP does NOT:                CBP DOES:
   </div>
 
   <div class="callout">
-    <strong>Persistence (v0.5).</strong> Servers configure durability under <code>server.persistence</code>. The <code>memory</code> driver (default) keeps the graph in-process only. The <code>filesystem</code> driver snapshots the graph to an absolute <code>path</code> using a debounced atomic write (1s after the last mutation, via tmp-file + rename). On start, the server hydrates from the snapshot; a malformed snapshot fails startup rather than silently proceeding. Hard-crash data-loss window equals the debounce interval. Background flush failures are delivered to an optional <code>onPersistenceError</code> callback on <code>CbpServerConfig</code> / <code>CbpClientConfig</code> so deployments can wire alerting. <code>GET /v1/frame/:id/export</code> returns the stored (non-resolved) shape — no resolver-computed fields such as <code>edge.active</code> — and its <code>nodes</code> and <code>edges</code> arrays must round-trip byte-identically under <code>canonicalize()</code> through an import/re-export cycle. <code>POST /v1/frame/:id/import</code> accepts the same shape, validates in three passes (schema, lineage/reference integrity, and frame-root containment — every imported node's lineage chain must terminate at the frame being imported into, and every imported edge's <code>src</code> must be in that frame), and either inserts every item or inserts none (422 with a structured error array). The frame-root containment pass closes the ACL-bypass vector where a caller authenticated for one frame could plant nodes that claimed lineage into another. See <code>spec/schemas/export.schema.json</code> and conformance vector <code>trading/003-export-roundtrip</code>.
+    <strong>Persistence (v0.5).</strong> Servers configure durability under <code>server.persistence</code>. The <code>memory</code> driver (default) keeps the graph in-process only. The <code>filesystem</code> driver snapshots the graph to an absolute <code>path</code> using a debounced atomic write (1s after the last mutation, via tmp-file + rename). On start, the server hydrates from the snapshot; a malformed snapshot fails startup rather than silently proceeding. Hard-crash data-loss window equals the debounce interval. Background flush failures are delivered to an optional <code>onPersistenceError</code> callback on <code>CbpServerConfig</code> / <code>CbpClientConfig</code> so deployments can wire alerting. <code>GET /v1/frame/:id/export</code> returns the stored (non-resolved) shape — no resolver-computed fields such as <code>edge.active</code> — and its <code>nodes</code> and <code>edges</code> arrays must round-trip byte-identically under <code>canonicalize()</code> through an import/re-export cycle. <code>POST /v1/frame/:id/import</code> accepts the same shape, validates in three passes (schema, lineage/reference integrity, and frame-root containment — every imported node's lineage chain must terminate at the frame being imported into, and every imported edge's <code>src</code> must be in that frame), and either inserts every item or inserts none (422 with a structured error array). The frame-root containment pass closes the ACL-bypass vector where a caller authenticated for one frame could plant nodes that claimed lineage into another. See <code>spec/schemas/export.schema.json</code> and conformance vector <code>accounts/003-export-roundtrip</code>.
   </div>
 
   <div class="callout blue">
@@ -849,20 +849,20 @@ CBP does NOT:                CBP DOES:
   <h3>Query Language (CBQ)</h3>
   <p>A minimal query syntax for frame filtering — designed to be readable by both humans and LLMs:</p>
 
-  <pre># Fetch crypto frame, only entities with weight > 0.5
-GET /v1/frame/crypto_macro?cbq=w>0.5
+  <pre># Fetch account frame, only entities with weight > 0.5
+GET /v1/frame/account_health?cbq=w>0.5
 
-# Only nodes tagged with "regime"
-GET /v1/frame/crypto_macro?cbq=tag:regime
+# Only nodes tagged with "renewal"
+GET /v1/frame/account_health?cbq=tag:renewal
 
-# Subgraph rooted at BTC, depth 2
-GET /v1/frame/crypto_macro?cbq=root:BTC,depth:2
+# Subgraph rooted at the Acme Corp entity, depth 2
+GET /v1/frame/account_health?cbq=root:a7c3f1e2,depth:2
 
 # Active edges only (conditionals evaluated)
-GET /v1/frame/crypto_macro?cbq=edges:active
+GET /v1/frame/account_health?cbq=edges:active
 
-# Combined: BTC subgraph, active edges, condensed tier
-GET /v1/frame/crypto_macro?tier=condensed&cbq=root:BTC,depth:2,edges:active</pre>
+# Combined: Acme Corp subgraph, active edges, condensed tier
+GET /v1/frame/account_health?tier=condensed&cbq=root:a7c3f1e2,depth:2,edges:active</pre>
   <p>The <code>tier</code> parameter is a top-level URL parameter, not part of CBQ syntax. CBQ uses the comma as its predicate separator; predicates within a query are combined with logical AND. The formal grammar is at <code>spec/cbq.ebnf</code> (ISO/IEC 14977 EBNF). <strong>v0.6:</strong> the CBQ predicate is applied server-side in <code>GET /v1/frame/{id}</code> before tier negotiation. Invalid syntax returns <code>400 Bad Request</code> with a parse-error detail. When the query is applied, the server emits the response header <code>X-CBP-CBQ-Applied: true</code>.</p>
 </div>
 
@@ -898,7 +898,7 @@ GET /v1/frame/crypto_macro?tier=condensed&cbq=root:BTC,depth:2,edges:active</pre
 
   <div class="card">
     <div class="card-title">6. THE GRAPH IS APPEND-MOSTLY</div>
-    <p>Nodes are upserted, not edited in place. History is preserved via <code>supersedes</code> edges. This makes the graph auditable and replayable — critical for trading and compliance domains.</p>
+    <p>Nodes are upserted, not edited in place. History is preserved via each node's <code>prev</code> pointer (the content-addressed predecessor). This makes the graph auditable and replayable.</p>
   </div>
 </div>
 

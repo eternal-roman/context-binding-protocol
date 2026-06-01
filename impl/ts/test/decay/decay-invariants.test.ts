@@ -26,14 +26,14 @@ describe("decay engine invariants", () => {
     const store = new GraphStore();
     const v1 = store.insertNode({
       type: "entity",
-      val: "BTC",
+      val: "Acme Corp",
       w: 0.9,
       decay: "epoch",
       ttl: null,
       lineage: null,
       tags: [],
     });
-    const v2 = store.upsertNode(v1.id, { val: "ETH" }, v1.v); // v1 superseded
+    const v2 = store.upsertNode(v1.id, { val: "Globex Inc" }, v1.v); // v1 superseded
     const v1wBefore = must(store, v1.id).w;
 
     const engine = new DecayEngine({ decayFactor: 0.5, gcThreshold: 0 });

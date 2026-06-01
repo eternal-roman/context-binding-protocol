@@ -4,7 +4,7 @@ import { getTokenizer } from "../../src/tokenizer/index.js";
 import type { ResolvedNode } from "../../src/types/node.js";
 
 const node = (over: Partial<ResolvedNode> = {}): ResolvedNode => ({
-  id: "a7c3f1e2", type: "state", val: "x", lineage: null, tags: ["domain:trading"],
+  id: "a7c3f1e2", type: "state", val: "x", lineage: null, tags: ["domain:accounts"],
   v: 1, prev: null, w: 1, decay: "none", ttl: null, ...over,
 });
 
@@ -14,9 +14,9 @@ describe("DeterministicFidelityDeriver", () => {
     expect(d.derive(node({ val: "hello world" }))).toEqual(d.derive(node({ val: "hello world" })));
   });
   it("uses the raw string for Full, a type:tag fingerprint for Signal", () => {
-    const f = new DeterministicFidelityDeriver().derive(node({ val: "BTC up" }));
-    expect(f.full).toBe("BTC up");
-    expect(f.signal).toBe("state:domain:trading");
+    const f = new DeterministicFidelityDeriver().derive(node({ val: "Acme Corp up" }));
+    expect(f.full).toBe("Acme Corp up");
+    expect(f.signal).toBe("state:domain:accounts");
   });
   it("condenses long content below full and emits ascending token cost", () => {
     const long = "sentence one is here. " + "filler ".repeat(80) + "tail.";

@@ -178,7 +178,7 @@ describe("CBP REST API", () => {
         w: 0.5,
         decay: "none",
         ttl: null,
-        lineage: null,
+        lineage: "f0000001",
         tags: [],
         v: 1,
         prev: null,

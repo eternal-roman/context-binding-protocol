@@ -43,9 +43,9 @@ describe("e2e: document → ingest → recall → ask", () => {
   it("two independent SDK clients do not share memory (per-client isolation)", async () => {
     const a = new CbpClient({ frameConfig: frame("fa"), writeAccess: true });
     const b = new CbpClient({ frameConfig: frame("fb"), writeAccess: true });
-    await a.ingest([{ type: "state", val: "ALPHA SECRET trading signal", w: 0.6, tags: [] }]);
+    await a.ingest([{ type: "state", val: "ALPHA SECRET account playbook", w: 0.6, tags: [] }]);
     await b.ingest([{ type: "state", val: "beta clinical note about vitals", w: 0.6, tags: [] }]);
-    const fromB = await b.recall("ALPHA SECRET trading signal");
+    const fromB = await b.recall("ALPHA SECRET account playbook");
     expect(fromB.block).not.toContain("ALPHA SECRET"); // a's fact never appears in b's recall
   });
 });

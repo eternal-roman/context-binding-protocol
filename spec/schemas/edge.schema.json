@@ -100,7 +100,7 @@
         "field": {
           "type": "string",
           "pattern": "^(entity|state|prior|frame):[A-Za-z0-9_]+(\\.[A-Za-z_][A-Za-z0-9_]*)*$",
-          "description": "Accessor in the form <type>:<id>.<field>[.<subfield>...]. Example: prior:regime.val"
+          "description": "Accessor in the form <type>:<id>.<field>[.<subfield>...]. Example: prior:d0f6a4b5.val.renewal_outlook"
         },
         "op": {
           "enum": ["eq", "ne", "lt", "lte", "gt", "gte", "in", "contains", "matches", "exists"],
@@ -160,9 +160,9 @@
       "rel": "correlates",
       "strength": 0.85,
       "conditional": {
-        "field": "prior:regime.val",
+        "field": "prior:d0f6a4b5.val.renewal_outlook",
         "op": "eq",
-        "value": "risk_on"
+        "value": "at_risk"
       },
       "w": 1.0,
       "decay": "none",
