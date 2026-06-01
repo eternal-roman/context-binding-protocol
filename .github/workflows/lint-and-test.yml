@@ -1,6 +1,11 @@
 name: Lint and Test
 
 on:
+  push:
+    branches: [main]
+    paths:
+      - 'impl/**'
+      - '.github/workflows/lint-and-test.yml'
   pull_request:
     types: [opened, synchronize, reopened]
     paths:
