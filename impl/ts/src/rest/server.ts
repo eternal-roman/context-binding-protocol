@@ -54,6 +54,8 @@ import type { ServerConfig } from "../types/config.js";
 import { TierPreference, MemoryConfig } from "../types/config.js";
 // Side-effect import: registers built-in tokenizers (o200k_base, length_fallback)
 import "../tokenizer/index.js";
+import { registerMatcher } from "../resolver/safe-match.js";
+import { re2Matcher } from "../matchers/re2-matcher.js";
 import { HashingEmbedder } from "../memory/embedder.js";
 import { InMemoryMemoryStore } from "../memory/store.js";
 import type { MemoryStore } from "../memory/store.js";
@@ -93,6 +95,13 @@ export interface CbpServer {
 }
 
 export function createCbpServer(config: CbpServerConfig): CbpServer {
+  // The `matches` condition operator needs a registered regex engine. `re2` is
+  // an optional native dependency of the core primitives (see
+  // resolver/safe-match.ts); the REST server is the batteries-included app
+  // tier, so it registers the reference RE2 engine here — making any frame with
+  // a `matches`-conditioned edge resolvable without separate wiring. Idempotent.
+  registerMatcher(re2Matcher);
+
   const app = Fastify({
     logger: {
       level: config.logLevel ?? "info",
