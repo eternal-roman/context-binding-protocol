@@ -1,0 +1,24 @@
+{
+  "vector_id": "legal-004-recall-budget",
+  "version": "0.11",
+  "domain": "legal",
+  "description": "Recall ranks fixture memories by cosine to the query (deterministic HashingEmbedder, dim 256), assembles the highest-fidelity-that-fits set, and never exceeds the budget. Fully portable: the hashing embedder is a pure function of text.",
+  "tags": ["recall", "assemble", "budget", "v0.11"],
+  "input": {
+    "frame": { "id": "contracts", "domain_tags": ["legal"], "root_weight": 1.0, "root_decay": "epoch", "max_token_budget": 4000, "inheritance_mode": "prototypal", "conditional_edge_eval": "eager", "tokenizer": "length_fallback" },
+    "nodes": [
+      { "id": "f0000001", "type": "frame", "val": { "name": "contracts" }, "w": 1.0, "decay": "epoch", "ttl": null, "lineage": null, "tags": [], "v": 1, "prev": null },
+      { "id": "a0000001", "type": "state", "val": "the contract indemnification clause caps total liability", "w": 0.9, "decay": "epoch", "ttl": null, "lineage": "f0000001", "tags": [], "v": 1, "prev": null },
+      { "id": "a0000002", "type": "state", "val": "bitcoin price is climbing fast today", "w": 0.8, "decay": "epoch", "ttl": null, "lineage": "f0000001", "tags": [], "v": 1, "prev": null }
+    ],
+    "edges": []
+  },
+  "operations": [
+    {
+      "op": "recall",
+      "description": "query 'indemnification liability clause' ranks the legal state first; both fit the 4000-token budget",
+      "params": { "query": "indemnification liability clause", "dim": 256, "k": 5, "budget": 4000 },
+      "expected": { "first_id": "a0000001", "admitted_ids": ["a0000001", "a0000002"], "tokens_le_budget": true }
+    }
+  ]
+}

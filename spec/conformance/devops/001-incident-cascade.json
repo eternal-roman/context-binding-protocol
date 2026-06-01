@@ -1,0 +1,143 @@
+{
+  "vector_id": "devops-001-incident-cascade",
+  "version": "0.3",
+  "domain": "devops",
+  "description": "Service dependency cascade during an incident. API gateway degradation causes downstream service weight boosts via 'causes' edges. Conditional edge activates only when gateway status is degraded.",
+  "tags": ["conditional", "causes", "cascade", "incident", "service"],
+  "input": {
+    "frame": {
+      "id": "incident_blast_radius",
+      "domain_tags": ["devops", "incident", "topology"],
+      "root_weight": 1.0,
+      "root_decay": "event",
+      "max_token_budget": 300,
+      "inheritance_mode": "prototypal",
+      "conditional_edge_eval": "eager",
+      "tokenizer": "length_fallback"
+    },
+    "nodes": [
+      {
+        "id": "d2f6a0b5",
+        "type": "frame",
+        "val": { "name": "incident_blast_radius" },
+        "w": 1.0,
+        "decay": "event",
+        "ttl": null,
+        "lineage": null,
+        "tags": ["domain:devops", "env:production"],
+        "v": 1,
+        "prev": null
+      },
+      {
+        "id": "a1b2c3d4",
+        "type": "entity",
+        "val": { "service": "api-gateway", "tier": "tier-1" },
+        "w": 1.0,
+        "decay": "event",
+        "ttl": null,
+        "lineage": "d2f6a0b5",
+        "tags": ["svc:api-gateway"],
+        "v": 1,
+        "prev": null
+      },
+      {
+        "id": "c9e5f3a4",
+        "type": "state",
+        "val": { "status": "degraded", "latency_p99_ms": 2340 },
+        "w": 0.95,
+        "decay": "event",
+        "ttl": 300,
+        "lineage": "a1b2c3d4",
+        "tags": ["severity:high"],
+        "v": 3,
+        "prev": "c9e5f3a3"
+      },
+      {
+        "id": "b2c3d4e5",
+        "type": "entity",
+        "val": { "service": "auth-service", "tier": "tier-2" },
+        "w": 0.7,
+        "decay": "event",
+        "ttl": null,
+        "lineage": "d2f6a0b5",
+        "tags": ["svc:auth-service"],
+        "v": 1,
+        "prev": null
+      },
+      {
+        "id": "d3e4f5a6",
+        "type": "state",
+        "val": { "status": "healthy", "latency_p99_ms": 45 },
+        "w": 0.5,
+        "decay": "event",
+        "ttl": 300,
+        "lineage": "b2c3d4e5",
+        "tags": [],
+        "v": 1,
+        "prev": null
+      }
+    ],
+    "edges": [
+      {
+        "id": "e4f5a6b7",
+        "src": "a1b2c3d4",
+        "tgt": "b2c3d4e5",
+        "rel": "requires",
+        "strength": 1.0,
+        "conditional": "always",
+        "w": 1.0,
+        "decay": "none",
+        "ttl": null,
+        "v": 1,
+        "prev": null
+      },
+      {
+        "id": "f5a6b7c8",
+        "src": "c9e5f3a4",
+        "tgt": "b2c3d4e5",
+        "rel": "causes",
+        "strength": 0.9,
+        "conditional": {
+          "field": "state:c9e5f3a4.val.status",
+          "op": "eq",
+          "value": "degraded"
+        },
+        "w": 0.9,
+        "decay": "event",
+        "ttl": 600,
+        "v": 1,
+        "prev": null
+      }
+    ]
+  },
+  "operations": [
+    {
+      "op": "resolve",
+      "description": "With gateway degraded, the causes edge should be ACTIVE — auth-service is in the blast radius",
+      "params": {},
+      "expected": {
+        "nodes": [
+          { "id": "d2f6a0b5" },
+          { "id": "a1b2c3d4" },
+          { "id": "c9e5f3a4" },
+          { "id": "b2c3d4e5" },
+          { "id": "d3e4f5a6" }
+        ],
+        "edges": [
+          { "id": "e4f5a6b7", "active": true },
+          { "id": "f5a6b7c8", "active": true }
+        ]
+      }
+    },
+    {
+      "op": "query",
+      "description": "Filter to severity:high tagged nodes",
+      "params": { "cbq": "tag:severity:high" },
+      "expected": {
+        "nodes": [
+          { "id": "c9e5f3a4" }
+        ]
+      }
+    }
+  ]
+}

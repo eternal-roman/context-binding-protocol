@@ -1,0 +1,51 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://contextbindingprotocol.org/schemas/v0.5/export.schema.json",
+  "title": "CBP Frame Export Envelope (v0.5)",
+  "description": "Canonical shape returned by GET /v1/frame/:id/export and accepted by POST /v1/frame/:id/import. Uses raw CbpNode and CbpEdge shapes — no resolver-computed fields (e.g. edge.active). The nodes and edges arrays must round-trip byte-identically under canonicalize() (RFC 8785) across an export -> import -> export cycle.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["frame_id", "exported_at", "nodes", "edges"],
+  "properties": {
+    "frame_id": {
+      "type": "string",
+      "description": "Human-readable frame identifier matching the configured frame's id."
+    },
+    "exported_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO-8601 timestamp of the export. Provenance only — not part of the byte-identical round-trip guarantee."
+    },
+    "nodes": {
+      "type": "array",
+      "description": "Every node whose lineage chain terminates at the frame root. Stored shape, not resolved shape.",
+      "items": { "$ref": "./node.schema.json" }
+    },
+    "edges": {
+      "type": "array",
+      "description": "Every edge whose src node is in the frame. Stored shape, not resolved shape: no 'active' field.",
+      "items": { "$ref": "./edge.schema.json" }
+    }
+  },
+  "examples": [
+    {
+      "frame_id": "crypto_macro",
+      "exported_at": "2026-04-17T14:30:00Z",
+      "nodes": [
+        {
+          "id": "f0d2e8a1",
+          "type": "frame",
+          "val": { "name": "crypto_macro" },
+          "w": 1.0,
+          "decay": "epoch",
+          "ttl": null,
+          "lineage": null,
+          "tags": ["domain:trading"],
+          "v": 1,
+          "prev": null
+        }
+      ],
+      "edges": []
+    }
+  ]
+}

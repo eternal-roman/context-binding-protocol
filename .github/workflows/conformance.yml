@@ -1,0 +1,78 @@
+name: Conformance
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    paths:
+      - 'spec/conformance/**'
+      - 'impl/**'
+      - '.github/workflows/conformance.yml'
+
+jobs:
+  check-domains:
+    name: Verify all required domains have vectors
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Check required domain directories
+        run: |
+          set -euo pipefail
+
+          REQUIRED_DOMAINS=("trading" "clinical" "devops" "legal")
+          failed=0
+
+          for domain in "${REQUIRED_DOMAINS[@]}"; do
+            dir="spec/conformance/${domain}"
+            if [ ! -d "$dir" ]; then
+              echo "FAIL: Required domain directory missing: $dir"
+              failed=1
+              continue
+            fi
+
+            count=$(find "$dir" -name "*.json" -type f | wc -l)
+            if [ "$count" -eq 0 ]; then
+              echo "FAIL: Domain directory $dir is empty (no .json vectors)"
+              failed=1
+            else
+              echo "PASS: $dir has $count vector(s)"
+            fi
+          done
+
+          if [ "$failed" -eq 1 ]; then
+            echo ""
+            echo "ERROR: One or more required domains are missing vectors."
+            echo "CBP is domain-general (cbp-architecture.html §I):"
+            echo "  All four domains (trading, clinical, devops, legal) are required."
+            exit 1
+          fi
+
+          echo ""
+          echo "All required domains have vectors."
+
+  typescript:
+    name: TypeScript — conformance vectors
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: impl/ts
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run conformance tests
+        run: pnpm test

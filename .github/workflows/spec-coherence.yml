@@ -1,0 +1,26 @@
+name: Spec Coherence
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    paths:
+      - 'cbp-architecture.html'
+      - 'spec/**'
+      - '.github/scripts/spec-coherence.mjs'
+      - '.github/workflows/spec-coherence.yml'
+
+jobs:
+  coherence-check:
+    name: Validate HTML ↔ schemas coherence
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Run spec-coherence validator
+        run: node .github/scripts/spec-coherence.mjs

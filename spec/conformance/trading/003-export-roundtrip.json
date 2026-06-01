@@ -1,0 +1,87 @@
+{
+  "vector_id": "trading-003-export-roundtrip",
+  "version": "0.5",
+  "domain": "trading",
+  "description": "Canonical-stability invariant: the frame's nodes and edges canonicalize (RFC 8785) byte-identically across a serialization round-trip, and resolver-computed fields (e.g. edge.active) must not appear in the export shape. The full REST GET /export -> POST /import (fresh store) -> GET /export cycle is verified by implementation integration tests; this portable vector pins the canonical-byte invariant that cycle depends on.",
+  "tags": ["export", "import", "roundtrip", "canonical", "persistence", "v0.5"],
+  "input": {
+    "frame": {
+      "id": "crypto_macro",
+      "domain_tags": ["trading", "crypto"],
+      "root_weight": 1.0,
+      "root_decay": "epoch",
+      "max_token_budget": 1000,
+      "inheritance_mode": "prototypal",
+      "conditional_edge_eval": "eager",
+      "tokenizer": "length_fallback"
+    },
+    "nodes": [
+      {
+        "id": "f0d2e8a1",
+        "type": "frame",
+        "val": { "name": "crypto_macro" },
+        "w": 1.0,
+        "decay": "epoch",
+        "ttl": null,
+        "lineage": null,
+        "tags": ["domain:trading"],
+        "v": 1,
+        "prev": null
+      },
+      {
+        "id": "a7c3f1e2",
+        "type": "entity",
+        "val": "BTC",
+        "w": 0.9,
+        "decay": "epoch",
+        "ttl": null,
+        "lineage": "f0d2e8a1",
+        "tags": [],
+        "v": 1,
+        "prev": null
+      },
+      {
+        "id": "b2c4d5e6",
+        "type": "state",
+        "val": { "price": 68420 },
+        "w": 0.8,
+        "decay": "event",
+        "ttl": null,
+        "lineage": "a7c3f1e2",
+        "tags": [],
+        "v": 2,
+        "prev": null
+      }
+    ],
+    "edges": [
+      {
+        "id": "e1000001",
+        "src": "a7c3f1e2",
+        "tgt": "f0d2e8a1",
+        "rel": "requires",
+        "strength": 1,
+        "conditional": {
+          "field": "state:b2c4d5e6.price",
+          "op": "gt",
+          "value": 50000
+        },
+        "w": 1,
+        "decay": "none",
+        "ttl": null,
+        "v": 1,
+        "prev": null
+      }
+    ]
+  },
+  "operations": [
+    {
+      "op": "export_roundtrip",
+      "description": "canonicalize(nodes) and canonicalize(edges) are byte-identical across a JSON serialization round-trip, and the export carries no resolver-computed fields on edges (e.g. edge.active). The full store re-import cycle is covered by implementation integration tests.",
+      "params": {},
+      "expected": {
+        "roundtrip": "byte_identical",
+        "must_not_contain_on_edges": ["active"]
+      }
+    }
+  ]
+}

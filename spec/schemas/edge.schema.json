@@ -1,0 +1,210 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://contextbindingprotocol.org/schemas/v0.2/edge.schema.json",
+  "title": "CBP Edge",
+  "description": "Schema for a typed, directional, conditional edge in the CBP graph. Edges connect two nodes and are gated by a conditional expression that determines activation based on current graph state.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "src", "tgt", "rel", "conditional", "v"],
+  "properties": {
+    "id": {
+      "$ref": "node.schema.json#/$defs/nodeId",
+      "description": "BLAKE3-derived edge identifier, same derivation as nodes."
+    },
+    "src": {
+      "$ref": "node.schema.json#/$defs/nodeId",
+      "description": "Source node id. The edge is directed from src to tgt."
+    },
+    "tgt": {
+      "$ref": "node.schema.json#/$defs/nodeId",
+      "description": "Target node id."
+    },
+    "rel": {
+      "enum": [
+        "causes",
+        "correlates",
+        "contradicts",
+        "qualifies",
+        "supersedes",
+        "requires",
+        "inhibits",
+        "amplifies"
+      ],
+      "description": "Edge type from the standard-8 vocabulary. Fixed set — the LLM never encounters novel relationship semantics."
+    },
+    "strength": {
+      "type": "number",
+      "minimum": -1,
+      "maximum": 1,
+      "default": 1,
+      "description": "Relationship strength. Positive = reinforcing, negative = opposing (relevant for 'correlates'). Default 1.0 (full strength, positive)."
+    },
+    "conditional": {
+      "$ref": "#/$defs/condition",
+      "description": "Activation condition. Edges are conditional-first (invariant #3): unconditional edges use the literal 'always'."
+    },
+    "w": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1,
+      "default": 1,
+      "description": "Relevance weight of the edge itself."
+    },
+    "decay": {
+      "enum": ["epoch", "event", "none"],
+      "default": "none",
+      "description": "Decay policy for the edge."
+    },
+    "ttl": {
+      "type": ["integer", "null"],
+      "minimum": 0,
+      "description": "Hard expiry in seconds. Null means no hard expiry."
+    },
+    "v": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Optimistic concurrency counter."
+    },
+    "prev": {
+      "oneOf": [
+        { "$ref": "node.schema.json#/$defs/nodeId" },
+        { "type": "null" }
+      ],
+      "description": "Prior version of this edge. Null on first version."
+    },
+    "active": {
+      "type": "boolean",
+      "description": "Whether this edge's conditional is currently satisfied. Computed at resolve-time, not stored. Present in resolved output only."
+    }
+  },
+  "$defs": {
+    "condition": {
+      "description": "Recursive conditional expression. Evaluates against current graph state to determine edge activation.",
+      "oneOf": [
+        {
+          "const": "always",
+          "description": "Unconditional — edge is always active. Syntactic sugar per invariant #3."
+        },
+        { "$ref": "#/$defs/leaf" },
+        { "$ref": "#/$defs/allCondition" },
+        { "$ref": "#/$defs/anyCondition" },
+        { "$ref": "#/$defs/notCondition" }
+      ]
+    },
+    "leaf": {
+      "type": "object",
+      "description": "A single comparison against a graph field value.",
+      "additionalProperties": false,
+      "required": ["field", "op"],
+      "properties": {
+        "field": {
+          "type": "string",
+          "pattern": "^(entity|state|prior|frame):[A-Za-z0-9_]+(\\.[A-Za-z_][A-Za-z0-9_]*)*$",
+          "description": "Accessor in the form <type>:<id>.<field>[.<subfield>...]. Example: prior:regime.val"
+        },
+        "op": {
+          "enum": ["eq", "ne", "lt", "lte", "gt", "gte", "in", "contains", "matches", "exists"],
+          "description": "Comparison operator. Strict typing — comparing incompatible types is an evaluation error, not false."
+        },
+        "value": {
+          "description": "Comparison literal. Required for all ops except 'exists'. Type must match the resolved field type at evaluation time."
+        }
+      },
+      "if": {
+        "properties": { "op": { "not": { "const": "exists" } } },
+        "required": ["op"]
+      },
+      "then": { "required": ["value"] }
+    },
+    "allCondition": {
+      "type": "object",
+      "description": "Logical AND — all sub-conditions must be true for the edge to activate.",
+      "additionalProperties": false,
+      "required": ["all"],
+      "properties": {
+        "all": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/condition" }
+        }
+      }
+    },
+    "anyCondition": {
+      "type": "object",
+      "description": "Logical OR — at least one sub-condition must be true for the edge to activate.",
+      "additionalProperties": false,
+      "required": ["any"],
+      "properties": {
+        "any": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/condition" }
+        }
+      }
+    },
+    "notCondition": {
+      "type": "object",
+      "description": "Logical NOT — the sub-condition must be false for the edge to activate.",
+      "additionalProperties": false,
+      "required": ["not"],
+      "properties": {
+        "not": { "$ref": "#/$defs/condition" }
+      }
+    }
+  },
+  "examples": [
+    {
+      "id": "f1a2b3c4",
+      "src": "a7c3f1e2",
+      "tgt": "b8d4e2f3",
+      "rel": "correlates",
+      "strength": 0.85,
+      "conditional": {
+        "field": "prior:regime.val",
+        "op": "eq",
+        "value": "risk_on"
+      },
+      "w": 1.0,
+      "decay": "none",
+      "ttl": null,
+      "v": 1,
+      "prev": null
+    },
+    {
+      "id": "a2b3c4d5",
+      "src": "b8d4e2f3",
+      "tgt": "c9e5f3a4",
+      "rel": "requires",
+      "strength": 1.0,
+      "conditional": {
+        "all": [
+          { "field": "entity:patient_4821.state.allergy_status.val", "op": "exists" },
+          { "field": "state:medication_active.val", "op": "eq", "value": true }
+        ]
+      },
+      "w": 0.95,
+      "decay": "none",
+      "ttl": null,
+      "v": 1,
+      "prev": null
+    },
+    {
+      "id": "b3c4d5e6",
+      "src": "d2f6a0b5",
+      "tgt": "c9e5f3a4",
+      "rel": "causes",
+      "strength": 0.9,
+      "conditional": {
+        "any": [
+          { "field": "state:api_gateway.val.status", "op": "eq", "value": "degraded" },
+          { "field": "state:api_gateway.val.latency_p99_ms", "op": "gt", "value": 2000 }
+        ]
+      },
+      "w": 0.9,
+      "decay": "event",
+      "ttl": 600,
+      "v": 1,
+      "prev": null
+    }
+  ]
+}

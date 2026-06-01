@@ -1,0 +1,122 @@
+{
+  "vector_id": "trading-002-conditional-edges",
+  "version": "0.3",
+  "domain": "trading",
+  "description": "Conditional edge activation based on regime prior. BTC-ETH correlation edge is active when regime=risk_on, dormant when regime=risk_off. Tests both states.",
+  "tags": ["conditional", "edges", "regime", "correlates"],
+  "input": {
+    "frame": {
+      "id": "crypto_macro",
+      "domain_tags": ["trading", "crypto"],
+      "root_weight": 1.0,
+      "root_decay": "epoch",
+      "max_token_budget": 400,
+      "inheritance_mode": "prototypal",
+      "conditional_edge_eval": "eager",
+      "tokenizer": "o200k_base"
+    },
+    "nodes": [
+      {
+        "id": "f0d2e8a1",
+        "type": "frame",
+        "val": { "name": "crypto_macro" },
+        "w": 1.0,
+        "decay": "epoch",
+        "ttl": null,
+        "lineage": null,
+        "tags": ["domain:trading"],
+        "v": 1,
+        "prev": null
+      },
+      {
+        "id": "a7c3f1e2",
+        "type": "entity",
+        "val": "BTC",
+        "w": 0.9,
+        "decay": "epoch",
+        "ttl": null,
+        "lineage": "f0d2e8a1",
+        "tags": [],
+        "v": 1,
+        "prev": null
+      },
+      {
+        "id": "d4e5f6a7",
+        "type": "entity",
+        "val": "ETH",
+        "w": 0.8,
+        "decay": "epoch",
+        "ttl": null,
+        "lineage": "f0d2e8a1",
+        "tags": [],
+        "v": 1,
+        "prev": null
+      },
+      {
+        "id": "e5f6a7b8",
+        "type": "prior",
+        "val": { "regime": "risk_on" },
+        "w": 0.6,
+        "decay": "epoch",
+        "ttl": 3600,
+        "lineage": "f0d2e8a1",
+        "tags": ["signal:regime"],
+        "v": 1,
+        "prev": null
+      }
+    ],
+    "edges": [
+      {
+        "id": "f1a2b3c4",
+        "src": "a7c3f1e2",
+        "tgt": "d4e5f6a7",
+        "rel": "correlates",
+        "strength": 0.85,
+        "conditional": {
+          "field": "prior:e5f6a7b8.val.regime",
+          "op": "eq",
+          "value": "risk_on"
+        },
+        "w": 1.0,
+        "decay": "none",
+        "ttl": null,
+        "v": 1,
+        "prev": null
+      }
+    ]
+  },
+  "operations": [
+    {
+      "op": "resolve",
+      "description": "With regime=risk_on, the BTC-ETH correlates edge should be ACTIVE",
+      "params": {},
+      "expected": {
+        "nodes": [
+          { "id": "f0d2e8a1" },
+          { "id": "a7c3f1e2" },
+          { "id": "d4e5f6a7" },
+          { "id": "e5f6a7b8" }
+        ],
+        "edges": [
+          {
+            "id": "f1a2b3c4",
+            "src": "a7c3f1e2",
+            "tgt": "d4e5f6a7",
+            "rel": "correlates",
+            "active": true
+          }
+        ]
+      }
+    },
+    {
+      "op": "query",
+      "description": "Filter to active edges only",
+      "params": { "cbq": "edges:active" },
+      "expected": {
+        "edges": [
+          { "id": "f1a2b3c4", "active": true }
+        ]
+      }
+    }
+  ]
+}

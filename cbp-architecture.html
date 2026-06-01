@@ -1,0 +1,913 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CBP — Context Binding Protocol</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Instrument+Serif&family=DM+Sans:wght@400;500;600&display=swap');
+
+  :root {
+    --bg: #0c0c0f;
+    --surface: #14141a;
+    --surface2: #1c1c24;
+    --border: #2a2a36;
+    --text: #e0ddd5;
+    --text-dim: #8a8780;
+    --accent: #c8a46e;
+    --accent2: #6e9fc8;
+    --accent3: #8bc86e;
+    --red: #c86e6e;
+    --mono: 'JetBrains Mono', monospace;
+    --serif: 'Instrument Serif', serif;
+    --sans: 'DM Sans', sans-serif;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    font-size: 15px;
+    line-height: 1.7;
+    padding: 2rem 1.25rem 6rem;
+    max-width: 780px;
+    margin: 0 auto;
+  }
+
+  header {
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 2rem;
+    margin-bottom: 3rem;
+  }
+
+  header h1 {
+    font-family: var(--serif);
+    font-size: 2.8rem;
+    font-weight: 400;
+    letter-spacing: -0.02em;
+    color: var(--accent);
+    line-height: 1.1;
+  }
+
+  header .subtitle {
+    font-family: var(--mono);
+    font-size: 0.75rem;
+    color: var(--text-dim);
+    margin-top: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+  }
+
+  header .thesis {
+    margin-top: 1.5rem;
+    font-size: 1.05rem;
+    color: var(--text);
+    border-left: 2px solid var(--accent);
+    padding-left: 1rem;
+  }
+
+  h2 {
+    font-family: var(--serif);
+    font-size: 1.8rem;
+    font-weight: 400;
+    color: var(--accent);
+    margin: 3rem 0 1.25rem;
+    letter-spacing: -0.01em;
+  }
+
+  h3 {
+    font-family: var(--sans);
+    font-weight: 600;
+    font-size: 1rem;
+    color: var(--accent2);
+    margin: 2rem 0 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-size: 0.8rem;
+  }
+
+  h4 {
+    font-family: var(--sans);
+    font-weight: 600;
+    font-size: 0.95rem;
+    color: var(--text);
+    margin: 1.5rem 0 0.5rem;
+  }
+
+  p { margin-bottom: 1rem; }
+
+  .section {
+    margin-bottom: 2.5rem;
+  }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1.25rem;
+    margin: 1rem 0;
+  }
+
+  .card-title {
+    font-family: var(--mono);
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--accent);
+    margin-bottom: 0.75rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .card-title .tag {
+    background: var(--surface2);
+    color: var(--text-dim);
+    font-size: 0.65rem;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-weight: 400;
+  }
+
+  pre {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 1rem;
+    overflow-x: auto;
+    font-family: var(--mono);
+    font-size: 0.78rem;
+    line-height: 1.6;
+    color: var(--text);
+    margin: 1rem 0;
+  }
+
+  code {
+    font-family: var(--mono);
+    font-size: 0.82em;
+    color: var(--accent2);
+    background: var(--surface2);
+    padding: 1px 5px;
+    border-radius: 3px;
+  }
+
+  .grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+    margin: 1rem 0;
+  }
+
+  @media (max-width: 600px) {
+    .grid-2 { grid-template-columns: 1fr; }
+    body { padding: 1.25rem 1rem 4rem; }
+    header h1 { font-size: 2.2rem; }
+  }
+
+  .metric {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1rem;
+    text-align: center;
+  }
+
+  .metric .value {
+    font-family: var(--serif);
+    font-size: 1.6rem;
+    color: var(--accent);
+  }
+
+  .metric .label {
+    font-size: 0.7rem;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-top: 0.25rem;
+  }
+
+  .diagram {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin: 1.25rem 0;
+    font-family: var(--mono);
+    font-size: 0.75rem;
+    line-height: 1.8;
+    color: var(--text-dim);
+    overflow-x: auto;
+    white-space: pre;
+  }
+
+  .diagram .hl { color: var(--accent); }
+  .diagram .h2 { color: var(--accent2); }
+  .diagram .h3 { color: var(--accent3); }
+  .diagram .hr { color: var(--red); }
+
+  .flow-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 0.5rem 0;
+    flex-wrap: wrap;
+  }
+
+  .flow-box {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 0.4rem 0.75rem;
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    color: var(--text);
+    white-space: nowrap;
+  }
+
+  .flow-box.accent { border-color: var(--accent); color: var(--accent); }
+  .flow-box.blue { border-color: var(--accent2); color: var(--accent2); }
+  .flow-box.green { border-color: var(--accent3); color: var(--accent3); }
+  .flow-box.red { border-color: var(--red); color: var(--red); }
+
+  .flow-arrow {
+    color: var(--text-dim);
+    font-family: var(--mono);
+    font-size: 0.8rem;
+  }
+
+  .table-wrap {
+    overflow-x: auto;
+    margin: 1rem 0;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.82rem;
+  }
+
+  th {
+    text-align: left;
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-dim);
+    padding: 0.6rem 0.75rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  td {
+    padding: 0.6rem 0.75rem;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+  }
+
+  td:first-child {
+    font-family: var(--mono);
+    font-size: 0.78rem;
+    color: var(--accent2);
+    white-space: nowrap;
+  }
+
+  .divider {
+    height: 1px;
+    background: var(--border);
+    margin: 3rem 0;
+  }
+
+  .callout {
+    border-left: 3px solid var(--accent);
+    padding: 1rem 1.25rem;
+    background: var(--surface);
+    margin: 1.25rem 0;
+    border-radius: 0 6px 6px 0;
+  }
+
+  .callout.blue { border-left-color: var(--accent2); }
+  .callout.green { border-left-color: var(--accent3); }
+  .callout.red { border-left-color: var(--red); }
+
+  ul {
+    padding-left: 1.25rem;
+    margin: 0.75rem 0;
+  }
+
+  li {
+    margin-bottom: 0.4rem;
+  }
+
+  .tag-row {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    margin: 0.75rem 0;
+  }
+
+  .tag-pill {
+    font-family: var(--mono);
+    font-size: 0.65rem;
+    padding: 3px 10px;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    color: var(--text-dim);
+  }
+  .tag-pill.gold { border-color: var(--accent); color: var(--accent); }
+  .tag-pill.blue { border-color: var(--accent2); color: var(--accent2); }
+  .tag-pill.green { border-color: var(--accent3); color: var(--accent3); }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Context Binding Protocol</h1>
+  <div class="subtitle">Design Reference · experimental · MIT licensed</div>
+  <p class="thesis">A small declarative format and reference library for delivering structured, state-conditioned, token-budgeted context to LLMs. It assembles well-established ideas — frame systems, typed property graphs, content-addressed identity, conditional rules, context compression — into one implementation, and claims no novelty over them.</p>
+</header>
+
+<!-- ============================================================ -->
+<h2>I. Core Thesis</h2>
+<div class="section">
+  <p>MCP answers: <em>"How does the LLM call this tool?"</em><br>
+  CBP answers: <em>"What does the world look like right now, structured for reasoning?"</em></p>
+
+  <p>The protocol encodes <strong>contextual state</strong> — entities, their relationships, their relevance weights, and their decay properties — in a format designed for LLM consumption. Context is inherited downward, conditional on state, and compressible across conversation turns.</p>
+
+  <h3>Scope and Applicability</h3>
+  <p>CBP is a <strong>domain-general protocol</strong>. It applies to any business that has context-dependent communication with AI systems and needs a structured, state-aware, token-efficient way to bind that context. The cryptocurrency examples used throughout this document (BTC, ETH, market regimes) reflect the origin context in which CBP was first conceived; they are illustrative, not prescriptive. Section V enumerates six application domains — and the protocol is designed to extend to any business domain with the same structural needs. CBP is a horizontal protocol with a trading origin story, not a trading protocol.</p>
+
+  <div class="grid-2">
+    <div class="metric">
+      <div class="value">4</div>
+      <div class="label">Node types</div>
+    </div>
+    <div class="metric">
+      <div class="value">8</div>
+      <div class="label">Edge types (standard vocabulary)</div>
+    </div>
+    <div class="metric">
+      <div class="value">3</div>
+      <div class="label">Serialization tiers</div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<h2>II. Node Taxonomy</h2>
+<div class="section">
+
+  <p>Every object in CBP is a <strong>context node</strong>. There are four node types, each serving a distinct function in the reasoning graph:</p>
+
+  <div class="table-wrap">
+    <table>
+      <tr><th>Type</th><th>Purpose</th><th>Examples</th></tr>
+      <tr>
+        <td>entity</td>
+        <td>A thing that exists in the domain. The noun. Can hold state children.</td>
+        <td>BTC, user:jon, ticker:AAPL, patient:4821</td>
+      </tr>
+      <tr>
+        <td>state</td>
+        <td>A measurable property of an entity at a point in time. Always a child.</td>
+        <td>price, momentum, sentiment, risk_score</td>
+      </tr>
+      <tr>
+        <td>prior</td>
+        <td>A belief about an entity or state before evidence. The Bayesian input.</td>
+        <td>regime:risk_on, sector:bullish, correlation_stable</td>
+      </tr>
+      <tr>
+        <td>frame</td>
+        <td>A container that scopes a subset of the graph for injection. The viewport.</td>
+        <td>frame:crypto_macro, frame:patient_intake</td>
+      </tr>
+    </table>
+  </div>
+
+  <h3>Node Schema (Canonical)</h3>
+  <pre>{
+  "id":      "8-char hex",       // BLAKE3 of content fields (type, val, lineage, tags)
+  "type":    "entity|state|prior|frame",
+  "val":     &lt;any JSON value&gt;,   // payload — semantics vary by type
+  "w":       0.0–1.0,           // relevance weight (metadata, not hashed)
+  "decay":   "epoch|event|none", // when staleness triggers
+  "ttl":     &lt;seconds | null&gt;,   // hard expiry
+  "lineage": "parent_id | null", // inheritance chain; null for frame roots
+  "tags":    ["domain:trading", "severity:high"],
+  "v":       1,                  // optimistic concurrency counter
+  "prev":    "prior_id | null"   // previous version of same logical node (G9)
+}</pre>
+
+  <div class="callout">
+    <strong>Identity derivation.</strong> The <code>id</code> field is the first 8 hex characters of the BLAKE3 hash of the node's <em>content fields</em> — <code>type</code>, <code>val</code>, <code>lineage</code>, and <code>tags</code>. Metadata fields (<code>w</code>, <code>decay</code>, <code>ttl</code>, <code>v</code>, <code>prev</code>) are not hashed; changing a node's weight does not change its identity. On collision, the display id extends one character at a time. The formal schema is at <code>spec/schemas/node.schema.json</code>.
+  </div>
+
+  <div class="callout blue">
+    <strong>Note on <code>supersedes</code> versus <code>prev</code> (G9).</strong> The standard-8 edge vocabulary includes a <code>supersedes</code> edge type — a <em>semantic relationship</em> between two nodes expressing "A replaces B conceptually or temporally." This edge is observable by other graph participants and by conditional-edge evaluation. Separately, every node has an optional <code>prev</code> field — a pointer to the prior version of <em>the same logical node</em>, implementing the append-mostly history required by invariant #6. The two are not interchangeable: <code>supersedes</code> is a first-class graph relationship; <code>prev</code> is a node-internal version pointer. Implementations must not collapse them.
+  </div>
+
+  <h3>Inheritance Resolution</h3>
+  <p>A child node inherits <strong>all fields</strong> from its parent except those it explicitly declares. Resolution walks upward through <code>lineage</code> until it hits a <code>frame</code> node (the root). This is prototypal — not class-based.</p>
+
+  <div class="diagram"><span class="hl">frame:crypto_macro</span>  w:1.0  decay:epoch  tags:[domain:crypto]
+  │
+  ├─ <span class="h2">entity:BTC</span>  (inherits w:1.0, decay:epoch, tags)
+  │   ├─ <span class="h3">state:price</span>     val:68420  w:0.9  decay:event  ← overrides
+  │   ├─ <span class="h3">state:momentum</span>  val:0.72   ← inherits w:1.0, decay:epoch
+  │   └─ <span class="hr">prior:regime</span>    val:risk_on  w:0.6  ttl:3600
+  │
+  ├─ <span class="h2">entity:ETH</span>  w:0.8  ← overrides, inherits decay, tags
+  │   ├─ <span class="h3">state:price</span>     val:3180
+  │   └─ <span class="h3">state:gas</span>      val:12gwei  decay:event  tags:[+infra]
+  │
+  └─ <span class="hl">edge</span>  src:BTC  tgt:ETH  rel:correlates  strength:0.85
+      conditional: regime=risk_on</div>
+
+  <div class="callout">
+    <strong>Key insight:</strong> In this tree, <code>state:momentum</code> under BTC never declares <code>w</code>, <code>decay</code>, or <code>tags</code> — it inherits all three from the frame root through its entity parent. Serialized, those inherited fields are omitted, so the node is smaller than a fully specified one.
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<h2>III. Edge Vocabulary</h2>
+<div class="section">
+
+  <p>Edges are deliberately constrained. A small, fixed vocabulary means the LLM doesn't burn tokens parsing novel relationship semantics. Every edge the model encounters is one it's seen before.</p>
+
+  <div class="table-wrap">
+    <table>
+      <tr><th>Edge Type</th><th>Semantics</th><th>Symmetric?</th></tr>
+      <tr><td>causes</td><td>A produces or triggers B</td><td>No</td></tr>
+      <tr><td>correlates</td><td>A and B move together (± strength)</td><td>Yes</td></tr>
+      <tr><td>contradicts</td><td>A's truth diminishes B's truth</td><td>Yes</td></tr>
+      <tr><td>qualifies</td><td>A modifies the interpretation of B</td><td>No</td></tr>
+      <tr><td>supersedes</td><td>A replaces B (temporal override)</td><td>No</td></tr>
+      <tr><td>requires</td><td>B is meaningless without A</td><td>No</td></tr>
+      <tr><td>inhibits</td><td>A's presence weakens B's relevance weight</td><td>No</td></tr>
+      <tr><td>amplifies</td><td>A's presence strengthens B's relevance weight</td><td>No</td></tr>
+    </table>
+  </div>
+
+  <h3>Conditional Edge Activation</h3>
+  <pre>{
+  "src": "BTC",
+  "tgt": "ETH",
+  "rel": "correlates",
+  "strength": 0.85,
+  "conditional": {
+    "field": "prior:regime.val",
+    "op": "eq",
+    "value": "risk_on"
+  }
+}</pre>
+
+  <p>When the regime prior shifts to <code>risk_off</code>, this edge goes <strong>dormant</strong>. It's excluded from frame serialization. The LLM never sees it — and never wastes tokens reasoning about a relationship that doesn't apply in the current context.</p>
+
+  <h4>Full Conditional Grammar</h4>
+  <p>Conditionals support boolean composition. The complete grammar:</p>
+  <pre>condition := "always"              // unconditional (syntactic sugar)
+           | leaf                   // single comparison
+           | { "all": [condition] } // AND — all must be true
+           | { "any": [condition] } // OR — at least one must be true
+           | { "not": condition }   // NOT — must be false
+
+leaf := { "field": "&lt;type&gt;:&lt;id&gt;.&lt;field&gt;", "op": &lt;op&gt;, "value": &lt;literal&gt; }
+      | { "field": "&lt;type&gt;:&lt;id&gt;.&lt;field&gt;", "op": "exists" }
+
+op := "eq" | "ne" | "lt" | "lte" | "gt" | "gte"
+    | "in" | "contains" | "matches" | "exists"</pre>
+  <p>Type comparisons are <strong>strict</strong> — comparing a number to a string is an evaluation error, not <code>false</code>. The formal schema is at <code>spec/schemas/edge.schema.json</code>.</p>
+
+  <div class="callout blue">
+    <strong>Why this matters:</strong> Conditional edges let the serialized graph reflect current state: a relationship can exist in storage but be excluded from a frame's serialization when its condition does not hold. This is ordinary conditional evaluation applied at the context-assembly layer.
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<h2>IV. Serialization Tiers</h2>
+<div class="section">
+
+  <p>The protocol's core memory trick. Three tiers of compression, negotiated between the CBP server and the consuming client:</p>
+
+  <div class="card">
+    <div class="card-title">TIER 1: FULL <span class="tag">First encounter</span></div>
+    <p>Complete node/edge expansion. All fields explicit. Inheritance resolved and shown. Used when the LLM encounters this frame for the first time in a conversation.</p>
+  </div>
+
+  <div class="card">
+    <div class="card-title">TIER 2: CONDENSED <span class="tag">Subsequent turns</span></div>
+    <p>Inherited fields omitted. Only overrides and deltas from the last Full serialization. Edges summarized by type counts unless changed.</p>
+  </div>
+
+  <div class="card">
+    <div class="card-title">TIER 3: SIGNAL <span class="tag">Reference only</span></div>
+    <p>Node IDs + weights + active edge directions. A fingerprint. Useful when the LLM has already internalized the frame structure and only needs to know <em>what changed</em>.</p>
+    <pre>"BTC:0.9↑ ETH:0.8→ SOL:0.6↓ | corr:2 cause:1"</pre>
+  </div>
+
+  <h3>Tier Negotiation Flow</h3>
+  <div class="flow-row">
+    <span class="flow-box accent">Client request</span>
+    <span class="flow-arrow">→</span>
+    <span class="flow-box">frame_id + tier hint</span>
+    <span class="flow-arrow">→</span>
+    <span class="flow-box blue">CBP Server</span>
+    <span class="flow-arrow">→</span>
+    <span class="flow-box green">Serialized payload</span>
+  </div>
+  <p>The client can request a specific tier, or send <code>tier: "auto"</code> — the server decides based on whether the conversation has previously received a Full serialization of that frame.</p>
+
+  <div class="callout">
+    <strong>Wire format.</strong> The canonical wire format for all tiers is <strong>JSON Canonical Form</strong> (RFC 8785) — deterministic key ordering, normalized numbers, no whitespace outside strings. This guarantees byte-identical output across implementations, which is required for content-addressable ids (BLAKE3) and conformance testing. The textual Signal example above (<code>"BTC:0.9↑ ETH:0.8→"</code>) is a human-readable rendering, not the wire format. Full wire-format specification: <code>spec/wire-format.md</code>.
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<h2>V. Application Domains</h2>
+<div class="section">
+
+  <h3>1. Algorithmic Trading</h3>
+  <div class="tag-row">
+    <span class="tag-pill gold">high value</span>
+    <span class="tag-pill blue">real-time decay</span>
+    <span class="tag-pill green">regime-conditional</span>
+  </div>
+  <p>The origin use case. A CBP frame encodes market regime, cross-asset correlations, momentum states, and Bayesian priors. The trading agent consumes a Condensed frame each tick, receiving only the delta. Conditional edges activate/deactivate based on regime classification — the agent literally sees a different market structure when conditions shift.</p>
+  <div class="callout">
+    <strong>Node structure:</strong> frame:market → entities (assets) → states (price, vol, momentum) + priors (regime, trend). Edges: correlations and causations between macro signals and price action. Decay: event-driven on price, epoch-driven on regime.
+  </div>
+
+  <h3>2. Clinical Decision Support</h3>
+  <div class="tag-row">
+    <span class="tag-pill gold">high stakes</span>
+    <span class="tag-pill blue">deep inheritance</span>
+    <span class="tag-pill green">regulatory</span>
+  </div>
+  <p>Patient context as a CBP graph. Demographics and chronic conditions are high-TTL entity nodes. Current symptoms are short-TTL state nodes. Drug interactions are conditional edges — activated only when both drugs are in the active medication list. The physician's LLM assistant sees a context-bound patient, not a raw chart dump.</p>
+  <div class="callout blue">
+    <strong>Inheritance play:</strong> A hospital's standard protocol is a frame root. Every patient inherits default weightings (vitals > subjective complaints), and the physician overrides for specific cases. New residents get the institutional prior for free.
+  </div>
+
+  <h3>3. Legal Document Analysis</h3>
+  <div class="tag-row">
+    <span class="tag-pill gold">high complexity</span>
+    <span class="tag-pill blue">deep hierarchy</span>
+    <span class="tag-pill">slow decay</span>
+  </div>
+  <p>Contract clauses as entity nodes, each with state children (enforceability score, jurisdiction applicability). Cross-references between clauses as <code>qualifies</code> and <code>contradicts</code> edges. Precedent rulings as prior nodes. The LLM reviewing a contract sees not just text but the structural web of obligations and conflicts — pre-mapped.</p>
+
+  <h3>4. DevOps / Incident Response</h3>
+  <div class="tag-row">
+    <span class="tag-pill gold">time-critical</span>
+    <span class="tag-pill blue">rapid decay</span>
+    <span class="tag-pill green">cascading edges</span>
+  </div>
+  <p>Services as entities. Health metrics as states. Dependency chains as <code>requires</code> and <code>causes</code> edges. When service A degrades, the <code>causes</code> edges propagate weight boosts to downstream services — the on-call LLM agent immediately sees the blast radius, not a flat alert list. TTL is aggressive: stale metrics auto-prune within minutes.</p>
+
+  <h3>5. Education / Adaptive Learning</h3>
+  <div class="tag-row">
+    <span class="tag-pill gold">personalized</span>
+    <span class="tag-pill blue">slow decay</span>
+    <span class="tag-pill green">amplifies/inhibits</span>
+  </div>
+  <p>Concepts as entities. Mastery levels as states. Prerequisite chains as <code>requires</code> edges. Misconceptions as <code>contradicts</code> edges against correct concepts. The tutoring LLM receives a student frame showing exactly what they know, what's shaky, and what they can't learn yet because prerequisites aren't met.</p>
+
+  <h3>6. Autonomous Agents (Multi-Step)</h3>
+  <div class="tag-row">
+    <span class="tag-pill gold">meta-layer</span>
+    <span class="tag-pill blue">self-referencing</span>
+    <span class="tag-pill green">plan graphs</span>
+  </div>
+  <p>Task nodes as entities. Completion states. Dependency edges. The agent's own previous outputs as prior nodes that qualify future decisions. CBP becomes the agent's working memory — structured, prunable, and transferable between agent instances. This is where the protocol most sharply diverges from MCP: an agent using MCP calls tools; an agent using CBP <em>understands its own situation</em>.</p>
+</div>
+
+<!-- ============================================================ -->
+<h2>VI. Integration Architecture</h2>
+<div class="section">
+
+  <h3>System Topology</h3>
+  <div class="diagram">┌──────────────────────────────────────────────┐
+│                  <span class="hl">CBP Server</span>                   │
+│                                              │
+│  ┌──────────┐  ┌──────────┐  ┌───────────┐  │
+│  │  <span class="h2">Graph</span>   │  │ <span class="h2">Decay</span>    │  │ <span class="h2">Serializer</span>│  │
+│  │  Engine   │  │ Engine   │  │ (3 tiers) │  │
+│  └────┬─────┘  └────┬─────┘  └─────┬─────┘  │
+│       └──────────┬───┘              │        │
+│              ┌───┴───┐              │        │
+│              │ <span class="h3">Frame</span>  │──────────────┘        │
+│              │ Router │                      │
+│              └───┬───┘                       │
+└──────────────────┼───────────────────────────┘
+                   │
+        ┌──────────┼──────────┐
+        │          │          │
+   ┌────┴───┐ ┌───┴────┐ ┌───┴────┐
+   │<span class="hl">REST API</span>│ │ <span class="hl">WebSock</span>│ │ <span class="hl">SDK</span>    │
+   │ /frame │ │ /stream│ │ embedd.│
+   └────┬───┘ └───┬────┘ └───┬────┘
+        │         │          │
+   ┌────┴─────────┴──────────┴────┐
+   │        <span class="h2">Consumers</span>              │
+   │  LLM apps · Agents · UIs    │
+   └──────────────────────────────┘</div>
+
+  <h3>Four Integration Modes</h3>
+
+  <div class="card">
+    <div class="card-title">MODE 1: SYSTEM PROMPT INJECTION <span class="tag">Simplest</span></div>
+    <p>The consuming app fetches a serialized frame and prepends it to the system prompt. The LLM reads context as structured text. No protocol awareness needed on the LLM side — it just reads well-organized data.</p>
+    <pre>GET /v1/frame/crypto_macro?tier=full
+
+→ Injected into system prompt as:
+  &lt;context_frame id="crypto_macro" v="1"&gt;
+    ... serialized CBP payload ...
+  &lt;/context_frame&gt;</pre>
+  </div>
+
+  <div class="card">
+    <div class="card-title">MODE 2: TOOL-MEDIATED <span class="tag">Interactive</span></div>
+    <p>Register CBP as a tool the LLM can call. The model requests frames by ID when it decides it needs context. This enables lazy loading — context is pulled on demand, not pre-loaded.</p>
+    <pre>tools: [{
+  "name": "cbp_frame",
+  "description": "Fetch structured context for a domain",
+  "parameters": {
+    "frame_id": "string",
+    "tier": "full|condensed|signal",
+    "filter_tags": ["string"]
+  }
+}]</pre>
+  </div>
+
+  <div class="card">
+    <div class="card-title">MODE 3: STREAMING DELTA <span class="tag">Real-time</span></div>
+    <p>WebSocket connection pushes Condensed or Signal tier updates as the underlying data changes. For trading, incident response, or any domain where context shifts faster than conversation turns.</p>
+    <pre>ws://cbp-server/v1/stream/crypto_macro
+
+→ { "delta": { "BTC.momentum": 0.68, "regime": "risk_off" },
+    "edges_deactivated": ["BTC→ETH:correlates"],
+    "tier": "signal" }</pre>
+  </div>
+
+  <div class="card">
+    <div class="card-title">MODE 4: EMBEDDED SDK <span class="tag">Agent-native</span></div>
+    <p>For autonomous agents, the CBP client runs in-process. The agent reads and <strong>writes</strong> to the graph — recording its own outputs as prior nodes, updating state based on actions taken. The graph becomes the agent's persistent working memory.</p>
+    <pre>import { CBPClient } from '@cbp/sdk';
+
+const ctx = new CBPClient('crypto_macro');
+const frame = await ctx.resolve({ tier: 'condensed' });
+
+// Agent takes action, records result as prior
+await ctx.upsert({
+  type: 'prior',
+  lineage: 'entity:BTC',
+  val: { action: 'long', confidence: 0.74 },
+  decay: 'event',
+  ttl: 7200
+});</pre>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<h2>VII. Configuration Model</h2>
+<div class="section">
+
+  <p>A CBP deployment is configured at three levels:</p>
+
+  <h4>1. Server Configuration</h4>
+  <pre>{
+  "server": {
+    "max_nodes_per_frame": 500,
+    "max_depth": 8,
+    "default_decay": "epoch",
+    "epoch_interval_seconds": 3600,   // GC sweep interval; advances epoch counter
+    "decay_factor": 0.85,             // w multiplier per epoch for decay:epoch nodes
+    "gc_policy": {
+      "strategy": "prune_below_weight",
+      "threshold": 0.1               // prune nodes with w below this
+    },
+    "edge_vocabulary": "standard_8",  // or "extended_12"
+    "compression": {
+      "condensed_threshold": 0.3,     // min delta ratio to trigger
+      "signal_min_turns": 3           // turns before signal tier allowed
+    }
+  }
+}</pre>
+  <div class="callout">
+    <strong>Epoch semantics (G2).</strong> The server maintains a monotonic epoch counter that advances by exactly one on each GC sweep. A node with <code>decay: epoch</code> has its <code>w</code> multiplied by <code>decay_factor</code> on each advance. At default settings (factor 0.85, threshold 0.1), a node starting at w=1.0 is pruned after ~14 epochs (~14 hours). Wall clock is the timer source for the sweep interval; the counter — not wall clock — is the semantic time. This makes deterministic replay possible. The formal schema is at <code>spec/schemas/config.schema.json</code>.
+  </div>
+
+  <h4>2. Frame Configuration</h4>
+  <pre>{
+  "frame": {
+    "id": "crypto_macro",
+    "domain_tags": ["crypto", "macro", "trading"],
+    "root_weight": 1.0,
+    "root_decay": "epoch",
+    "refresh_policy": "on_demand | interval:300 | event:price_update",
+    "max_token_budget": 400,  // hard cap for serialized output
+    "inheritance_mode": "prototypal",  // or "override_only"
+    "conditional_edge_eval": "eager",  // or "lazy"
+    "tokenizer": "o200k_base",        // configurable per frame (G4)
+    "acl_tags": ["acl:desk_alpha"]    // bearer-token ACL (G8 v0.x)
+  }
+}</pre>
+  <p>The <code>tokenizer</code> field selects the token-counting strategy for budget enforcement. Implementations register tokenizers by string identifier; the default <code>o200k_base</code> is a reference, not a mandate. The <code>acl_tags</code> field controls per-frame access: a request's bearer token must match at least one ACL tag to access the frame; an empty array means accessible to all authenticated tokens. The formal schema is at <code>spec/schemas/frame.schema.json</code>.</p>
+
+  <h4>3. Client Configuration</h4>
+  <pre>{
+  "client": {
+    "preferred_tier": "auto",
+    "context_window_budget": 2000,   // tokens reserved for CBP
+    "multi_frame_strategy": "merge | priority_stack | isolate",
+    "stale_frame_policy": "warn | refresh | use_cached",
+    "write_access": true              // can the client upsert nodes?
+  }
+}</pre>
+
+  <div class="callout green">
+    <strong>Token budget enforcement:</strong> The <code>max_token_budget</code> on a frame is a hard cap. If the serialized frame exceeds it, the serializer prunes lowest-weight nodes first, then collapses inherited fields, then falls back to a lower tier. The LLM always gets a payload that fits.
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<h2>VIII. Product Topology</h2>
+<div class="section">
+
+  <p>Where CBP sits in a product stack — and what it's <em>not</em>:</p>
+
+  <div class="diagram">
+<span class="hr">Data Providers</span>           <span class="hl">CBP Layer</span>              <span class="h3">Consumers</span>
+(raw feeds, APIs)       (context binding)        (LLM apps)
+
+┌─────────────┐      ┌─────────────────┐     ┌──────────────┐
+│ Market data  │─────▶│  Ingest         │     │ Trading bot  │
+│ APIs         │      │  ↓              │     │              │
+└─────────────┘      │  Normalize      │────▶│ Copilot      │
+┌─────────────┐      │  ↓              │     │              │
+│ News feeds   │─────▶│  Enrich (w,     │     │ Agent        │
+│              │      │   decay, edges) │     │              │
+└─────────────┘      │  ↓              │     │ Dashboard    │
+┌─────────────┐      │  Frame → Tier   │     │              │
+│ Internal DB  │─────▶│  → Serialize    │────▶│ Any LLM app  │
+└─────────────┘      └─────────────────┘     └──────────────┘
+
+CBP does NOT:                CBP DOES:
+• Store raw data             • Bind meaning to data
+• Provide market feeds       • Weight relevance
+• Execute trades             • Encode relationships
+• Run the LLM                • Compress for context windows
+• Replace MCP                • Complement MCP</pre></div>
+
+  <h3>Complementary Product Relationships</h3>
+
+  <div class="table-wrap">
+    <table>
+      <tr><th>Product</th><th>Relationship to CBP</th><th>Integration</th></tr>
+      <tr>
+        <td>MCP</td>
+        <td>Orthogonal. MCP connects tools; CBP provides context. An agent can use MCP to call an API and CBP to understand what the result means.</td>
+        <td>CBP frame injected alongside MCP tool definitions in system prompt</td>
+      </tr>
+      <tr>
+        <td>RAG</td>
+        <td>Complementary. RAG retrieves documents; CBP provides the relational scaffold that tells the LLM how to weigh and connect those documents.</td>
+        <td>RAG results tagged with CBP node IDs for contextual placement</td>
+      </tr>
+      <tr>
+        <td>Vector DBs</td>
+        <td>Upstream data source. Embeddings feed into CBP entity states. CBP adds structure, weight, and decay that embeddings lack.</td>
+        <td>Vector search results ingested as CBP state nodes</td>
+      </tr>
+      <tr>
+        <td>LLM Memory</td>
+        <td>CBP is a structured, portable alternative. Unlike conversation-derived memory, CBP graphs are explicit, auditable, and shareable.</td>
+        <td>CBP frames can persist across sessions as the agent's external memory</td>
+      </tr>
+      <tr>
+        <td>Prompt Frameworks</td>
+        <td>CBP replaces the "context" section of structured prompts. Instead of hand-written context blocks, inject a CBP frame.</td>
+        <td>Frame serialization outputs prompt-ready text blocks</td>
+      </tr>
+    </table>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<h2>IX. Interface Contract</h2>
+<div class="section">
+
+  <h3>REST API Surface</h3>
+
+  <div class="table-wrap">
+    <table>
+      <tr><th>Endpoint</th><th>Method</th><th>Purpose</th></tr>
+      <tr><td>/v1/frames</td><td>GET</td><td>List available frames</td></tr>
+      <tr><td>/v1/frame/{id}</td><td>GET</td><td>Fetch serialized frame (tier param)</td></tr>
+      <tr><td>/v1/frame/{id}/eval</td><td>POST</td><td>Evaluate conditionals, return active graph</td></tr>
+      <tr><td>/v1/frame/{id}/budget</td><td>GET</td><td>Token count estimate at each tier</td></tr>
+      <tr><td>/v1/frame/{id}/export</td><td>GET</td><td>Return stored nodes and edges in canonical shape (v0.5)</td></tr>
+      <tr><td>/v1/frame/{id}/import</td><td>POST</td><td>Atomic batch import of nodes and edges (v0.5)</td></tr>
+      <tr><td>/v1/node</td><td>POST</td><td>Insert a new node (409 on id collision, 422 on orphan lineage) — v0.6</td></tr>
+      <tr><td>/v1/node/{id}</td><td>GET</td><td>Fetch a stored node (v0.5)</td></tr>
+      <tr><td>/v1/node/{id}</td><td>PUT</td><td>Idempotent upsert (201 on insert, 200 on update; server computes <code>v</code>/<code>prev</code>) — v0.8</td></tr>
+      <tr><td>/v1/node/{id}</td><td>PATCH</td><td>Optimistic-concurrency update via <code>expectedV</code> (v0.6)</td></tr>
+      <tr><td>/v1/node/{id}</td><td>DELETE</td><td>Remove a node (cascades to children)</td></tr>
+      <tr><td>/v1/edge</td><td>POST</td><td>Insert a new edge (409 on id collision, 422 on missing/cross-frame src) — v0.8</td></tr>
+      <tr><td>/v1/edge/{id}</td><td>GET</td><td>Fetch a stored edge (v0.5)</td></tr>
+      <tr><td>/v1/edge/{id}</td><td>PUT</td><td>Idempotent upsert (201 on insert, 200 on update; server computes <code>v</code>/<code>prev</code>) — v0.8</td></tr>
+      <tr><td>/healthz</td><td>GET</td><td>Unauthenticated liveness probe (v0.5)</td></tr>
+      <tr><td>/v1/stream/{frame_id}</td><td>WS</td><td>Subscribe to mutation events for a frame (v0.7)</td></tr>
+    </table>
+  </div>
+
+  <div class="callout">
+    <strong>Authentication (G8 v0.x).</strong> All endpoints <em>except <code>/healthz</code></em> require a Bearer token in the <code>Authorization</code> header. Per-frame access is controlled via <code>acl_tags</code> in the frame configuration — a request's token must match at least one ACL tag to access a restricted frame. Frames with no ACL tags are accessible to all authenticated tokens. mTLS and federation key models are deferred to v1.0. See <code>spec/schemas/frame.schema.json</code>.
+  </div>
+
+  <div class="callout blue">
+    <strong>Concurrency (G7, v0.8).</strong> Writes split into four verbs by intent. <code>POST /v1/node</code> is <strong>insert-only</strong> — it returns <code>409 Conflict</code> with <code>{current_v, hint}</code> if a node with the same id already exists, and <code>422 Unprocessable Entity</code> if the node's lineage chain does not terminate at any configured frame (closes the silent-orphan and cross-frame ACL-bypass vectors). <code>PUT /v1/node/{id}</code> is the <strong>idempotent upsert</strong> path, intended for memory-style writes with client-derived deterministic ids: body is a <code>CbpNode</code> with <code>v</code> and <code>prev</code> optional (v0.8.1 — server computes both and ignores any client-supplied values); on insert the server returns <code>201 Created</code> with <code>v=1</code>; on update the server returns <code>200 OK</code> with <code>v=existing.v+1</code> and <code>prev=existing.id</code>. <code>PATCH /v1/node/{id}</code> is the <strong>CAS update</strong> path for concurrent-writer scenarios: body is <code>{expectedV: number, update: {...}}</code>; if <code>expectedV</code> matches, the upsert proceeds; if not, <code>409 Conflict</code> with <code>{expected_v, current_v}</code> and the client re-reads and retries. Edges mirror the same verb set (<code>POST /v1/edge</code> strict-insert with src-frame ACL enforcement, <code>PUT /v1/edge/{id}</code> idempotent upsert). Use <code>POST /v1/frame/{id}/import</code> for bulk idempotent restore. Because the graph is append-mostly (invariant #6), conflicts should be rare. See <code>spec/schemas/node.schema.json</code>.
+  </div>
+
+  <div class="callout">
+    <strong>Persistence (v0.5).</strong> Servers configure durability under <code>server.persistence</code>. The <code>memory</code> driver (default) keeps the graph in-process only. The <code>filesystem</code> driver snapshots the graph to an absolute <code>path</code> using a debounced atomic write (1s after the last mutation, via tmp-file + rename). On start, the server hydrates from the snapshot; a malformed snapshot fails startup rather than silently proceeding. Hard-crash data-loss window equals the debounce interval. Background flush failures are delivered to an optional <code>onPersistenceError</code> callback on <code>CbpServerConfig</code> / <code>CbpClientConfig</code> so deployments can wire alerting. <code>GET /v1/frame/:id/export</code> returns the stored (non-resolved) shape — no resolver-computed fields such as <code>edge.active</code> — and its <code>nodes</code> and <code>edges</code> arrays must round-trip byte-identically under <code>canonicalize()</code> through an import/re-export cycle. <code>POST /v1/frame/:id/import</code> accepts the same shape, validates in three passes (schema, lineage/reference integrity, and frame-root containment — every imported node's lineage chain must terminate at the frame being imported into, and every imported edge's <code>src</code> must be in that frame), and either inserts every item or inserts none (422 with a structured error array). The frame-root containment pass closes the ACL-bypass vector where a caller authenticated for one frame could plant nodes that claimed lineage into another. See <code>spec/schemas/export.schema.json</code> and conformance vector <code>trading/003-export-roundtrip</code>.
+  </div>
+
+  <div class="callout blue">
+    <strong>Errors (v0.5).</strong> When a serialization can't fit even at Signal tier, the server returns <strong>413 Payload Too Large</strong> with body <code>{ reason: "budget_exceeded", estimates: {full, condensed, signal}, max_token_budget, suggestion }</code> — making invariant #1 (token budget is law) legible to clients instead of surfacing as a generic 500. <code>POST /v1/frame/:id/import</code> returns <strong>422 Unprocessable Entity</strong> with <code>{ nodes_accepted: 0, edges_accepted: 0, errors: [{index, kind, issues}] }</code> when any node or edge fails schema or reference validation; nothing is inserted in that case.
+  </div>
+
+  <div class="callout">
+    <strong>Streaming (Mode 3, v0.7).</strong> Subscribers upgrade an HTTP GET to a WebSocket at <code>/v1/stream/{frame_id}</code>. The upgrade request is authenticated by the same bearer-token hook as the REST surface and ACL-checked against the target frame. While subscribed, clients receive a JSON envelope on every mutation to the frame: <code>{event: "node_upserted", frame_id, node_id, v}</code>, <code>{event: "node_removed", frame_id, node_id}</code>, <code>{event: "edge_upserted", frame_id, edge_id, v}</code>, <code>{event: "edge_removed", frame_id, edge_id}</code>, or <code>{event: "import_committed", frame_id, nodes, edges}</code>. These are deliberately minimal "something changed" signals rather than full resolved frames — subscribers decide when to re-read via <code>GET /v1/frame/:id/export</code> or <code>GET /v1/frame/:id</code>. The full tier-negotiated push path via <code>StreamManager.notify</code> remains available to library consumers for richer streaming use cases.
+  </div>
+
+  <div class="callout blue">
+    <strong>Tier-reason observability (v0.7).</strong> <code>GET /v1/frame/:id</code> responses include an <code>X-CBP-Tier-Reason</code> header that exposes the router's decision for the delivered tier. Values: <code>client_requested</code> (the caller passed a concrete <code>tier=</code>), <code>first_turn</code> (auto, no prior Full in this conversation), <code>condensed_default</code> (auto, not yet past the signal threshold), <code>signal_threshold_met</code> (auto, at least <code>signal_min_turns</code> of Condensed have been delivered since the last Full). Closes the consumer's observability gap for debugging "why did turn N return tier X".
+  </div>
+
+  <h3>Query Language (CBQ)</h3>
+  <p>A minimal query syntax for frame filtering — designed to be readable by both humans and LLMs:</p>
+
+  <pre># Fetch crypto frame, only entities with weight > 0.5
+GET /v1/frame/crypto_macro?cbq=w>0.5
+
+# Only nodes tagged with "regime"
+GET /v1/frame/crypto_macro?cbq=tag:regime
+
+# Subgraph rooted at BTC, depth 2
+GET /v1/frame/crypto_macro?cbq=root:BTC,depth:2
+
+# Active edges only (conditionals evaluated)
+GET /v1/frame/crypto_macro?cbq=edges:active
+
+# Combined: BTC subgraph, active edges, condensed tier
+GET /v1/frame/crypto_macro?tier=condensed&cbq=root:BTC,depth:2,edges:active</pre>
+  <p>The <code>tier</code> parameter is a top-level URL parameter, not part of CBQ syntax. CBQ uses the comma as its predicate separator; predicates within a query are combined with logical AND. The formal grammar is at <code>spec/cbq.ebnf</code> (ISO/IEC 14977 EBNF). <strong>v0.6:</strong> the CBQ predicate is applied server-side in <code>GET /v1/frame/{id}</code> before tier negotiation. Invalid syntax returns <code>400 Bad Request</code> with a parse-error detail. When the query is applied, the server emits the response header <code>X-CBP-CBQ-Applied: true</code>.</p>
+</div>
+
+<!-- ============================================================ -->
+<h2>X. Design Invariants</h2>
+<div class="section">
+  <p>Non-negotiable properties of any conforming CBP implementation:</p>
+
+  <div class="card">
+    <div class="card-title">1. TOKEN BUDGET IS LAW</div>
+    <p>A frame serialization must never exceed its configured token budget. If the graph is too large, the serializer prunes, compresses, or drops tier — never overflows.</p>
+  </div>
+
+  <div class="card">
+    <div class="card-title">2. INHERITANCE IS DEFAULT</div>
+    <p>A node with no declared field inherits from its parent. Explicit is override. This is not optional — it's what makes the protocol compact.</p>
+  </div>
+
+  <div class="card">
+    <div class="card-title">3. EDGES ARE CONDITIONAL-FIRST</div>
+    <p>Every edge <em>can</em> have a conditional. Unconditional edges are syntactic sugar for <code>conditional: always</code>. This means the graph is always state-aware — there's no "static" mode.</p>
+  </div>
+
+  <div class="card">
+    <div class="card-title">4. DECAY IS MANDATORY</div>
+    <p>Every node must declare a decay policy (or inherit one). There is no immortal data in CBP. Even "permanent" entities use <code>decay: none</code> explicitly — which is auditable and overridable.</p>
+  </div>
+
+  <div class="card">
+    <div class="card-title">5. FRAMES ARE THE UNIT OF DELIVERY</div>
+    <p>You never serialize a raw node. You serialize a frame that contains nodes. This guarantees every payload has a root, a scope, and a coherent inheritance chain.</p>
+  </div>
+
+  <div class="card">
+    <div class="card-title">6. THE GRAPH IS APPEND-MOSTLY</div>
+    <p>Nodes are upserted, not edited in place. History is preserved via <code>supersedes</code> edges. This makes the graph auditable and replayable — critical for trading and compliance domains.</p>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<p style="color: var(--text-dim); font-family: var(--mono); font-size: 0.72rem; text-align: center;">
+  CBP v0.1 · Architecture Reference · April 2026<br>
+  Designed for LLM-native context delivery
+</p>
+
+</body>
+</html>

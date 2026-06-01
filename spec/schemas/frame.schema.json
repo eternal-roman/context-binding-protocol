@@ -1,0 +1,101 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://contextbindingprotocol.org/schemas/v0.2/frame.schema.json",
+  "title": "CBP Frame Configuration",
+  "description": "Configuration schema for a CBP frame — the viewport that scopes a subset of the graph for serialization and delivery to consumers. Frame ids are human-readable (the only intentional exception to BLAKE3-derived ids) because they appear in URL paths (/v1/frame/{id}).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "root_weight", "root_decay", "max_token_budget", "inheritance_mode"],
+  "properties": {
+    "id": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^[a-z][a-z0-9_]*$",
+      "description": "Human-readable frame identifier. Appears in REST URL paths. Lowercase alphanumeric with underscores."
+    },
+    "domain_tags": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Domain categorization. Used for CBQ tag filtering and for cross-domain conformance enforcement."
+    },
+    "root_weight": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1,
+      "description": "Default weight inherited by all children that do not override w."
+    },
+    "root_decay": {
+      "enum": ["epoch", "event", "none"],
+      "description": "Default decay policy inherited by all children that do not override decay."
+    },
+    "refresh_policy": {
+      "type": "string",
+      "pattern": "^(on_demand|interval:[0-9]+|event:[a-z][a-z0-9_]*)$",
+      "default": "on_demand",
+      "description": "When the frame's nodes are refreshed from upstream data. 'on_demand' = on client request only. 'interval:N' = every N seconds. 'event:name' = on named event trigger."
+    },
+    "max_token_budget": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Hard cap on serialized output tokens for this frame (invariant #1: token budget is law). The serializer prunes, compresses, or drops tier — never overflows."
+    },
+    "inheritance_mode": {
+      "enum": ["prototypal", "override_only"],
+      "description": "'prototypal' = child inherits all fields from parent, overrides selectively. 'override_only' = child must declare all fields explicitly."
+    },
+    "conditional_edge_eval": {
+      "enum": ["eager", "lazy"],
+      "default": "eager",
+      "description": "'eager' = all conditionals evaluated on frame resolve. 'lazy' = conditionals evaluated only when the edge's src or tgt is requested."
+    },
+    "tokenizer": {
+      "type": "string",
+      "default": "o200k_base",
+      "description": "Tokenizer identifier for budget enforcement. Implementations register tokenizers by string id. Default is o200k_base (OpenAI). A 'length_fallback' tokenizer (chars/4) is available in environments without tiktoken."
+    },
+    "acl_tags": {
+      "type": "array",
+      "items": { "type": "string", "pattern": "^acl:[a-zA-Z0-9_-]+$" },
+      "default": [],
+      "description": "Bearer-token access control (G8 v0.x). A request's token must match at least one acl tag to access this frame. Empty array = accessible to all authenticated tokens."
+    }
+  },
+  "examples": [
+    {
+      "id": "crypto_macro",
+      "domain_tags": ["trading", "crypto", "macro"],
+      "root_weight": 1.0,
+      "root_decay": "epoch",
+      "refresh_policy": "event:price_update",
+      "max_token_budget": 400,
+      "inheritance_mode": "prototypal",
+      "conditional_edge_eval": "eager",
+      "tokenizer": "o200k_base",
+      "acl_tags": ["acl:trading_desk_alpha"]
+    },
+    {
+      "id": "patient_intake",
+      "domain_tags": ["clinical", "emergency", "intake"],
+      "root_weight": 1.0,
+      "root_decay": "none",
+      "refresh_policy": "on_demand",
+      "max_token_budget": 600,
+      "inheritance_mode": "prototypal",
+      "conditional_edge_eval": "eager",
+      "tokenizer": "o200k_base",
+      "acl_tags": ["acl:ed_attending", "acl:ed_resident"]
+    },
+    {
+      "id": "incident_blast_radius",
+      "domain_tags": ["devops", "incident", "topology"],
+      "root_weight": 1.0,
+      "root_decay": "event",
+      "refresh_policy": "interval:30",
+      "max_token_budget": 300,
+      "inheritance_mode": "prototypal",
+      "conditional_edge_eval": "eager",
+      "tokenizer": "length_fallback",
+      "acl_tags": []
+    }
+  ]
+}

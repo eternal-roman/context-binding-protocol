@@ -1,0 +1,144 @@
+{
+  "vector_id": "clinical-001-patient-inheritance",
+  "version": "0.3",
+  "domain": "clinical",
+  "description": "Patient intake frame with deep inheritance. Hospital protocol frame root sets default weights (vitals > subjective). Patient entity inherits. Vital-sign states inherit from patient. Demonstrates clinical use of prototypal inheritance for institutional priors.",
+  "tags": ["inheritance", "prototypal", "clinical", "patient", "vitals"],
+  "input": {
+    "frame": {
+      "id": "patient_intake",
+      "domain_tags": ["clinical", "emergency", "intake"],
+      "root_weight": 1.0,
+      "root_decay": "none",
+      "max_token_budget": 600,
+      "inheritance_mode": "prototypal",
+      "conditional_edge_eval": "eager",
+      "tokenizer": "o200k_base"
+    },
+    "nodes": [
+      {
+        "id": "c1e5f9a2",
+        "type": "frame",
+        "val": { "name": "patient_intake", "protocol": "ED-standard-v3" },
+        "w": 1.0,
+        "decay": "none",
+        "ttl": null,
+        "lineage": null,
+        "tags": ["domain:clinical", "dept:emergency"],
+        "v": 1,
+        "prev": null
+      },
+      {
+        "id": "b8d4e2f3",
+        "type": "entity",
+        "val": { "name": "Patient 4821", "mrn": "MRN-004821", "age": 67 },
+        "w": 1.0,
+        "decay": "none",
+        "ttl": null,
+        "lineage": "c1e5f9a2",
+        "tags": [],
+        "v": 1,
+        "prev": null
+      },
+      {
+        "id": "d4e5f6a7",
+        "type": "state",
+        "val": { "bp_systolic": 142, "bp_diastolic": 88, "hr": 92 },
+        "w": 0.95,
+        "decay": "event",
+        "ttl": 900,
+        "lineage": "b8d4e2f3",
+        "tags": ["vitals"],
+        "v": 2,
+        "prev": "d4e5f6a6"
+      },
+      {
+        "id": "e5f6a7b8",
+        "type": "state",
+        "val": { "complaint": "chest pain", "onset": "2 hours ago", "severity": 7 },
+        "w": 0.8,
+        "decay": "none",
+        "ttl": null,
+        "lineage": "b8d4e2f3",
+        "tags": ["subjective"],
+        "v": 1,
+        "prev": null
+      },
+      {
+        "id": "f6a7b8c9",
+        "type": "prior",
+        "val": { "history": "hypertension", "chronic": true, "years": 12 },
+        "w": 0.7,
+        "decay": "none",
+        "ttl": null,
+        "lineage": "b8d4e2f3",
+        "tags": ["pmh"],
+        "v": 1,
+        "prev": null
+      }
+    ],
+    "edges": [
+      {
+        "id": "a1b2c3d4",
+        "src": "f6a7b8c9",
+        "tgt": "d4e5f6a7",
+        "rel": "qualifies",
+        "strength": 0.8,
+        "conditional": "always",
+        "w": 1.0,
+        "decay": "none",
+        "ttl": null,
+        "v": 1,
+        "prev": null
+      }
+    ]
+  },
+  "operations": [
+    {
+      "op": "resolve",
+      "description": "Resolve frame: child nodes inherit tags from frame root. Vitals and complaint states inherit domain:clinical and dept:emergency from frame root via patient entity.",
+      "params": {},
+      "expected": {
+        "nodes": [
+          {
+            "id": "c1e5f9a2",
+            "tags": ["domain:clinical", "dept:emergency"]
+          },
+          {
+            "id": "b8d4e2f3",
+            "tags": ["domain:clinical", "dept:emergency"]
+          },
+          {
+            "id": "d4e5f6a7",
+            "tags": ["domain:clinical", "dept:emergency", "vitals"]
+          },
+          {
+            "id": "e5f6a7b8",
+            "tags": ["domain:clinical", "dept:emergency", "subjective"]
+          },
+          {
+            "id": "f6a7b8c9",
+            "tags": ["domain:clinical", "dept:emergency", "pmh"]
+          }
+        ],
+        "edges": [
+          {
+            "id": "a1b2c3d4",
+            "active": true
+          }
+        ]
+      }
+    },
+    {
+      "op": "query",
+      "description": "Filter to type:state only",
+      "params": { "cbq": "type:state" },
+      "expected": {
+        "nodes": [
+          { "id": "d4e5f6a7" },
+          { "id": "e5f6a7b8" }
+        ]
+      }
+    }
+  ]
+}

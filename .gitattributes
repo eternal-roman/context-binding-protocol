@@ -1,0 +1,26 @@
+# Normalize line endings on checkout. Git stores LF internally;
+# working copy uses the platform default unless overridden below.
+* text=auto
+
+# Force LF for all source and spec files (cross-platform consistency)
+*.json    text eol=lf
+*.md      text eol=lf
+*.html    text eol=lf
+*.yml     text eol=lf
+*.yaml    text eol=lf
+*.ebnf    text eol=lf
+*.ts      text eol=lf
+*.mjs     text eol=lf
+*.js      text eol=lf
+*.py      text eol=lf
+*.rs      text eol=lf
+*.go      text eol=lf
+*.toml    text eol=lf
+*.lock    text eol=lf
+
+# Binary files — do not normalize
+*.png     binary
+*.jpg     binary
+*.ico     binary
+*.woff    binary
+*.woff2   binary

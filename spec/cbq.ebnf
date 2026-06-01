@@ -1,0 +1,112 @@
+(* ================================================================== *)
+(* CBP Query Language (CBQ) — Formal Grammar v0.2                     *)
+(* Defined per ISO/IEC 14977 EBNF                                     *)
+(*                                                                    *)
+(* CBQ is a minimal query syntax for frame filtering, designed to be  *)
+(* readable by both humans and LLMs. It appears as the value of the   *)
+(* `cbq` URL query parameter in REST requests:                        *)
+(*   GET /v1/frame/{id}?tier=condensed&cbq=root:BTC,depth:2,edges:active *)
+(*                                                                    *)
+(* The `tier` parameter is a top-level URL parameter, not part of CBQ *)
+(* syntax. CBQ never sees `&` — the comma is the predicate separator. *)
+(*                                                                    *)
+(* Spec reference: cbp-architecture.html Section IX                   *)
+(* Schema reference: spec/schemas/edge.schema.json (conditional ops)  *)
+(* ================================================================== *)
+
+(* --- Top-level --- *)
+
+query           = predicate , { "," , predicate } ;
+
+(* --- Predicates --- *)
+
+predicate       = weight_pred
+                | tag_pred
+                | type_pred
+                | root_pred
+                | depth_pred
+                | edges_pred
+                | id_pred ;
+
+weight_pred     = "w" , comparison_op , number ;
+tag_pred        = "tag:" , identifier ;
+type_pred       = "type:" , node_type ;
+root_pred       = "root:" , node_id ;
+depth_pred      = "depth:" , positive_integer ;
+edges_pred      = "edges:" , edge_filter ;
+id_pred         = "id:" , node_id ;
+
+(* --- Operators and literals --- *)
+
+comparison_op   = ">" | ">=" | "<" | "<=" | "=" | "!=" ;
+
+edge_filter     = "active" | "all" | "dormant" ;
+
+node_type       = "entity" | "state" | "prior" | "frame" ;
+
+(* --- Identifiers --- *)
+
+node_id         = hex_char , hex_char , hex_char , hex_char ,
+                  hex_char , hex_char , hex_char , hex_char ,
+                  { hex_char } ;
+                  (* 8+ hex characters matching the node id pattern *)
+
+identifier      = id_start , { id_continue } ;
+id_start        = letter | "_" ;
+id_continue     = letter | digit | "_" | ":" | "-" ;
+
+(* --- Numbers --- *)
+
+number          = [ "-" ] , digit_seq , [ "." , digit_seq ] ;
+positive_integer = nonzero_digit , { digit } ;
+digit_seq       = digit , { digit } ;
+
+(* --- Character classes --- *)
+
+letter          = "A" | "B" | "C" | "D" | "E" | "F" | "G" | "H"
+                | "I" | "J" | "K" | "L" | "M" | "N" | "O" | "P"
+                | "Q" | "R" | "S" | "T" | "U" | "V" | "W" | "X"
+                | "Y" | "Z"
+                | "a" | "b" | "c" | "d" | "e" | "f" | "g" | "h"
+                | "i" | "j" | "k" | "l" | "m" | "n" | "o" | "p"
+                | "q" | "r" | "s" | "t" | "u" | "v" | "w" | "x"
+                | "y" | "z" ;
+
+digit           = "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7"
+                | "8" | "9" ;
+
+nonzero_digit   = "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8"
+                | "9" ;
+
+hex_char        = digit
+                | "a" | "b" | "c" | "d" | "e" | "f" ;
+
+(* ================================================================== *)
+(* Semantic notes (non-normative, informational)                       *)
+(*                                                                    *)
+(* 1. Predicates in a query are combined with logical AND.            *)
+(*    "w>0.5,tag:regime" means "nodes where w > 0.5 AND tagged with  *)
+(*    'regime'".                                                       *)
+(*                                                                    *)
+(* 2. root: and depth: work together. root: selects a subgraph        *)
+(*    rooted at the named node; depth: limits the traversal depth     *)
+(*    from that root. Without root:, depth: is ignored. Without       *)
+(*    depth:, root: returns the full subgraph below the root.         *)
+(*                                                                    *)
+(* 3. edges: filters which edges are included in the response:        *)
+(*    - "active" = only edges whose conditional evaluates to true     *)
+(*    - "dormant" = only edges whose conditional evaluates to false   *)
+(*    - "all" = both active and dormant edges included                *)
+(*    Default (when edges: is not specified) is "active".             *)
+(*                                                                    *)
+(* 4. id: selects a specific node by id. Useful for direct lookups.  *)
+(*                                                                    *)
+(* 5. type: filters nodes to a single type. Combinable with other    *)
+(*    predicates: "type:state,w>0.7" = high-weight states only.      *)
+(*                                                                    *)
+(* 6. Future predicates (reserved, not in v0.2 grammar):             *)
+(*    - lineage: (filter by parent chain)                             *)
+(*    - since: (filter by v or timestamp — requires clock semantics) *)
+(*    - regex: (string matching on val)                               *)
+(*    These will be added via spec amendment when implemented.         *)
+(* ================================================================== *)

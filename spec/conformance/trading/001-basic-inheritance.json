@@ -1,0 +1,142 @@
+{
+  "vector_id": "trading-001-basic-inheritance",
+  "version": "0.3",
+  "domain": "trading",
+  "description": "Basic prototypal inheritance from frame root through entity to state nodes. BTC entity inherits w and decay from the frame root. Price state overrides w but inherits decay. Momentum state inherits everything.",
+  "tags": ["inheritance", "prototypal", "entity", "state"],
+  "input": {
+    "frame": {
+      "id": "crypto_macro",
+      "domain_tags": ["trading", "crypto", "macro"],
+      "root_weight": 1.0,
+      "root_decay": "epoch",
+      "max_token_budget": 400,
+      "inheritance_mode": "prototypal",
+      "conditional_edge_eval": "eager",
+      "tokenizer": "o200k_base"
+    },
+    "nodes": [
+      {
+        "id": "f0d2e8a1",
+        "type": "frame",
+        "val": { "name": "crypto_macro" },
+        "w": 1.0,
+        "decay": "epoch",
+        "ttl": null,
+        "lineage": null,
+        "tags": ["domain:trading"],
+        "v": 1,
+        "prev": null
+      },
+      {
+        "id": "a7c3f1e2",
+        "type": "entity",
+        "val": "BTC",
+        "w": 1.0,
+        "decay": "epoch",
+        "ttl": null,
+        "lineage": "f0d2e8a1",
+        "tags": [],
+        "v": 1,
+        "prev": null
+      },
+      {
+        "id": "b2c4d5e6",
+        "type": "state",
+        "val": { "price": 68420 },
+        "w": 0.9,
+        "decay": "event",
+        "ttl": null,
+        "lineage": "a7c3f1e2",
+        "tags": [],
+        "v": 3,
+        "prev": null
+      },
+      {
+        "id": "c3d5e6f7",
+        "type": "state",
+        "val": { "momentum": 0.72 },
+        "w": 1.0,
+        "decay": "epoch",
+        "ttl": null,
+        "lineage": "a7c3f1e2",
+        "tags": [],
+        "v": 1,
+        "prev": null
+      }
+    ],
+    "edges": []
+  },
+  "operations": [
+    {
+      "op": "resolve",
+      "description": "Resolve frame: inheritance fills tags on child nodes from frame root",
+      "params": {},
+      "expected": {
+        "nodes": [
+          {
+            "id": "f0d2e8a1",
+            "type": "frame",
+            "val": { "name": "crypto_macro" },
+            "w": 1.0,
+            "decay": "epoch",
+            "ttl": null,
+            "lineage": null,
+            "tags": ["domain:trading"],
+            "v": 1,
+            "prev": null
+          },
+          {
+            "id": "a7c3f1e2",
+            "type": "entity",
+            "val": "BTC",
+            "w": 1.0,
+            "decay": "epoch",
+            "ttl": null,
+            "lineage": "f0d2e8a1",
+            "tags": ["domain:trading"],
+            "v": 1,
+            "prev": null
+          },
+          {
+            "id": "b2c4d5e6",
+            "type": "state",
+            "val": { "price": 68420 },
+            "w": 0.9,
+            "decay": "event",
+            "ttl": null,
+            "lineage": "a7c3f1e2",
+            "tags": ["domain:trading"],
+            "v": 3,
+            "prev": null
+          },
+          {
+            "id": "c3d5e6f7",
+            "type": "state",
+            "val": { "momentum": 0.72 },
+            "w": 1.0,
+            "decay": "epoch",
+            "ttl": null,
+            "lineage": "a7c3f1e2",
+            "tags": ["domain:trading"],
+            "v": 1,
+            "prev": null
+          }
+        ],
+        "edges": []
+      }
+    },
+    {
+      "op": "query",
+      "description": "Filter to nodes with w > 0.9 — should return frame root, BTC entity, and momentum state (all w=1.0)",
+      "params": { "cbq": "w>0.9" },
+      "expected": {
+        "nodes": [
+          { "id": "f0d2e8a1" },
+          { "id": "a7c3f1e2" },
+          { "id": "c3d5e6f7" }
+        ]
+      }
+    }
+  ]
+}

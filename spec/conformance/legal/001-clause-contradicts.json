@@ -1,0 +1,170 @@
+{
+  "vector_id": "legal-001-clause-contradicts",
+  "version": "0.3",
+  "domain": "legal",
+  "description": "Contract clause analysis with contradicts edge. Two clauses are in tension — limitation of liability contradicts the indemnification clause when the contract value exceeds a threshold. Tests conditional contradiction detection.",
+  "tags": ["conditional", "contradicts", "legal", "clauses", "contract"],
+  "input": {
+    "frame": {
+      "id": "contract_review",
+      "domain_tags": ["legal", "contract", "review"],
+      "root_weight": 1.0,
+      "root_decay": "none",
+      "max_token_budget": 500,
+      "inheritance_mode": "prototypal",
+      "conditional_edge_eval": "eager",
+      "tokenizer": "o200k_base"
+    },
+    "nodes": [
+      {
+        "id": "a0b1c2d3",
+        "type": "frame",
+        "val": { "name": "contract_review", "contract_ref": "MSA-2026-0042" },
+        "w": 1.0,
+        "decay": "none",
+        "ttl": null,
+        "lineage": null,
+        "tags": ["domain:legal", "jurisdiction:delaware"],
+        "v": 1,
+        "prev": null
+      },
+      {
+        "id": "b1c2d3e4",
+        "type": "entity",
+        "val": {
+          "clause": "§7 Limitation of Liability",
+          "text": "Total liability shall not exceed the fees paid in the 12 months preceding the claim.",
+          "section": 7
+        },
+        "w": 0.9,
+        "decay": "none",
+        "ttl": null,
+        "lineage": "a0b1c2d3",
+        "tags": ["clause:limitation"],
+        "v": 1,
+        "prev": null
+      },
+      {
+        "id": "c2d3e4f5",
+        "type": "state",
+        "val": { "enforceability_score": 0.85, "jurisdiction_applicable": true },
+        "w": 0.9,
+        "decay": "none",
+        "ttl": null,
+        "lineage": "b1c2d3e4",
+        "tags": [],
+        "v": 1,
+        "prev": null
+      },
+      {
+        "id": "d3e4f5a6",
+        "type": "entity",
+        "val": {
+          "clause": "§12 Indemnification",
+          "text": "Provider shall indemnify and hold harmless the Client against all losses, including consequential damages.",
+          "section": 12
+        },
+        "w": 0.85,
+        "decay": "none",
+        "ttl": null,
+        "lineage": "a0b1c2d3",
+        "tags": ["clause:indemnification"],
+        "v": 1,
+        "prev": null
+      },
+      {
+        "id": "e4f5a6b7",
+        "type": "state",
+        "val": { "contract_value_usd": 2500000 },
+        "w": 0.8,
+        "decay": "none",
+        "ttl": null,
+        "lineage": "a0b1c2d3",
+        "tags": ["financial"],
+        "v": 1,
+        "prev": null
+      },
+      {
+        "id": "f5a6b7c8",
+        "type": "prior",
+        "val": {
+          "precedent": "Delaware courts have held that limitation clauses cap indemnification when both are present",
+          "confidence": 0.7
+        },
+        "w": 0.65,
+        "decay": "none",
+        "ttl": null,
+        "lineage": "a0b1c2d3",
+        "tags": ["precedent"],
+        "v": 1,
+        "prev": null
+      }
+    ],
+    "edges": [
+      {
+        "id": "a2b3c4d5",
+        "src": "b1c2d3e4",
+        "tgt": "d3e4f5a6",
+        "rel": "contradicts",
+        "strength": 0.75,
+        "conditional": {
+          "field": "state:e4f5a6b7.val.contract_value_usd",
+          "op": "gt",
+          "value": 1000000
+        },
+        "w": 0.9,
+        "decay": "none",
+        "ttl": null,
+        "v": 1,
+        "prev": null
+      },
+      {
+        "id": "b3c4d5e6",
+        "src": "f5a6b7c8",
+        "tgt": "b1c2d3e4",
+        "rel": "qualifies",
+        "strength": 0.7,
+        "conditional": "always",
+        "w": 0.8,
+        "decay": "none",
+        "ttl": null,
+        "v": 1,
+        "prev": null
+      }
+    ]
+  },
+  "operations": [
+    {
+      "op": "resolve",
+      "description": "Contract value is $2.5M (> $1M threshold), so the contradicts edge between limitation and indemnification clauses should be ACTIVE. The qualifies edge from precedent to limitation is unconditional (always active).",
+      "params": {},
+      "expected": {
+        "nodes": [
+          { "id": "a0b1c2d3" },
+          { "id": "b1c2d3e4" },
+          { "id": "c2d3e4f5" },
+          { "id": "d3e4f5a6" },
+          { "id": "e4f5a6b7" },
+          { "id": "f5a6b7c8" }
+        ],
+        "edges": [
+          { "id": "a2b3c4d5", "active": true },
+          { "id": "b3c4d5e6", "active": true }
+        ]
+      }
+    },
+    {
+      "op": "query",
+      "description": "Filter to nodes with w >= 0.85",
+      "params": { "cbq": "w>=0.85" },
+      "expected": {
+        "nodes": [
+          { "id": "a0b1c2d3" },
+          { "id": "b1c2d3e4" },
+          { "id": "c2d3e4f5" },
+          { "id": "d3e4f5a6" }
+        ]
+      }
+    }
+  ]
+}

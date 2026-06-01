@@ -1,0 +1,171 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://contextbindingprotocol.org/schemas/v0.2/config.schema.json",
+  "title": "CBP Server and Client Configuration",
+  "description": "Configuration schema for the CBP server and client layers. Frame-level configuration is defined separately in frame.schema.json.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "server": { "$ref": "#/$defs/serverConfig" },
+    "client": { "$ref": "#/$defs/clientConfig" }
+  },
+  "$defs": {
+    "serverConfig": {
+      "type": "object",
+      "description": "Server-level configuration governing all frames hosted by this CBP instance.",
+      "additionalProperties": false,
+      "required": ["max_nodes_per_frame", "max_depth", "default_decay", "epoch_interval_seconds"],
+      "properties": {
+        "max_nodes_per_frame": {
+          "type": "integer",
+          "minimum": 1,
+          "default": 500,
+          "description": "Maximum number of nodes a single frame may contain before the server rejects further inserts."
+        },
+        "max_depth": {
+          "type": "integer",
+          "minimum": 1,
+          "default": 8,
+          "description": "Maximum inheritance depth (lineage chain length from leaf to frame root)."
+        },
+        "max_conversations": {
+          "type": "integer",
+          "minimum": 1,
+          "default": 10000,
+          "description": "Maximum number of distinct conversations the Frame Router retains tier-negotiation state for. The conversation id is client-supplied (X-CBP-Conversation), so this bounds memory against a client cycling unique ids; the least-recently-used conversation is evicted when the cap is exceeded."
+        },
+        "default_decay": {
+          "enum": ["epoch", "event", "none"],
+          "default": "epoch",
+          "description": "Decay policy applied to nodes that do not declare one and whose lineage chain provides no inherited value."
+        },
+        "epoch_interval_seconds": {
+          "type": "integer",
+          "minimum": 1,
+          "default": 3600,
+          "description": "Wall-clock interval in seconds at which the GC sweep runs. Each sweep advances the server's monotonic epoch counter by exactly one. The epoch counter — not wall clock — is the semantic time source for decay:epoch nodes."
+        },
+        "decay_factor": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "maximum": 1,
+          "default": 0.85,
+          "description": "Multiplier applied to a node's w on each epoch advance when the node has decay:epoch. At default 0.85, a node with w=1.0 falls below the GC threshold of 0.1 after approximately 14 epochs."
+        },
+        "gc_policy": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["strategy"],
+          "properties": {
+            "strategy": {
+              "enum": ["prune_below_weight"],
+              "description": "GC strategy. 'prune_below_weight' removes nodes whose w falls below the threshold. Future strategies will be added via spec amendment."
+            },
+            "threshold": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1,
+              "default": 0.1,
+              "description": "Weight below which a node is pruned on the next GC sweep."
+            }
+          },
+          "description": "Garbage collection policy. Determines when decayed nodes are removed from the graph."
+        },
+        "edge_vocabulary": {
+          "enum": ["standard_8", "extended_12"],
+          "default": "standard_8",
+          "description": "Edge vocabulary level. 'standard_8' is the 8 edges defined in Section III. 'extended_12' adds 4 future edges (not yet specified — reserved for a future spec amendment)."
+        },
+        "compression": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "condensed_threshold": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1,
+              "default": 0.3,
+              "description": "Minimum ratio of changed fields to total fields before a Condensed tier serialization is triggered (vs resending Full)."
+            },
+            "signal_min_turns": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 3,
+              "description": "Minimum number of conversation turns that must have received a Full serialization before Signal tier is permitted."
+            }
+          },
+          "description": "Tier compression thresholds governing when the serializer transitions between Full, Condensed, and Signal tiers."
+        },
+        "persistence": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "driver": {
+              "enum": ["memory", "filesystem"],
+              "default": "memory",
+              "description": "Storage driver. 'memory' keeps the graph in-process only (restart = clean slate). 'filesystem' snapshots the graph to disk with debounced atomic writes."
+            },
+            "path": {
+              "type": "string",
+              "description": "Absolute path to the snapshot file when driver='filesystem'. Required in that case. The server hydrates from this file on start and writes atomically to this path (via a .tmp sibling + rename)."
+            }
+          },
+          "description": "Durability configuration (v0.5). When driver='filesystem', the server serializes the graph to the configured path ~1s after the last mutation using canonicalize() output."
+        }
+      }
+    },
+    "clientConfig": {
+      "type": "object",
+      "description": "Client-level configuration for a CBP consumer (LLM app, agent, dashboard).",
+      "additionalProperties": false,
+      "properties": {
+        "preferred_tier": {
+          "enum": ["full", "condensed", "signal", "auto"],
+          "default": "auto",
+          "description": "'auto' lets the server decide tier based on conversation state. Specific values force a tier."
+        },
+        "context_window_budget": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Total tokens the client reserves for CBP across all frames in a single request. The Frame Router distributes budget across active frames."
+        },
+        "multi_frame_strategy": {
+          "enum": ["merge", "priority_stack", "isolate"],
+          "default": "isolate",
+          "description": "'merge' = combine multiple frames into one payload. 'priority_stack' = deliver frames in priority order until budget exhausted. 'isolate' = each frame gets its own payload block."
+        },
+        "stale_frame_policy": {
+          "enum": ["warn", "refresh", "use_cached"],
+          "default": "refresh",
+          "description": "What happens when a cached frame's TTL has expired. 'warn' = deliver with staleness marker. 'refresh' = fetch fresh before delivery. 'use_cached' = deliver stale silently."
+        },
+        "write_access": {
+          "type": "boolean",
+          "default": false,
+          "description": "Whether this client can upsert nodes into the graph. False = read-only consumer. True = agents that record their own outputs as prior nodes (Mode 4: embedded SDK)."
+        }
+      }
+    }
+  },
+  "examples": [
+    {
+      "server": {
+        "max_nodes_per_frame": 500,
+        "max_depth": 8,
+        "default_decay": "epoch",
+        "epoch_interval_seconds": 3600,
+        "decay_factor": 0.85,
+        "gc_policy": { "strategy": "prune_below_weight", "threshold": 0.1 },
+        "edge_vocabulary": "standard_8",
+        "compression": { "condensed_threshold": 0.3, "signal_min_turns": 3 }
+      },
+      "client": {
+        "preferred_tier": "auto",
+        "context_window_budget": 2000,
+        "multi_frame_strategy": "isolate",
+        "stale_frame_policy": "refresh",
+        "write_access": false
+      }
+    }
+  ]
+}

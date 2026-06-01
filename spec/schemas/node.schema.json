@@ -1,0 +1,140 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://contextbindingprotocol.org/schemas/v0.2/node.schema.json",
+  "title": "CBP Node",
+  "description": "Canonical schema for a Context Binding Protocol node. Covers all four node types: entity, state, prior, frame.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "type", "val", "v"],
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{8,64}$",
+      "description": "BLAKE3-derived display identifier. First 8 hex characters of the BLAKE3 hash of the node's content fields (type, val, lineage, tags). Extended one character at a time on collision, up to the full 64-character hex representation of the 32-byte hash."
+    },
+    "type": {
+      "enum": ["entity", "state", "prior", "frame"],
+      "description": "Node type per Section II of the CBP architecture reference."
+    },
+    "val": {
+      "description": "Node payload. Any valid JSON value. Content semantics vary by node type."
+    },
+    "w": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1,
+      "description": "Relevance weight. 0.0 = irrelevant (candidate for GC), 1.0 = maximally relevant. Inheritable (invariant #2): if omitted, the value is inherited from the nearest ancestor that declares it (prototypal mode), falling back to the spec default 1.0. Not part of the content hash."
+    },
+    "decay": {
+      "enum": ["epoch", "event", "none"],
+      "description": "Decay policy. 'epoch' = weight decays on each GC epoch advance. 'event' = weight resets on a named event trigger. 'none' = no automatic decay (explicitly auditable). Inheritable (invariant #2): if omitted, inherited from the lineage chain, falling back to the spec default 'epoch'. Not part of the content hash."
+    },
+    "ttl": {
+      "type": ["integer", "null"],
+      "minimum": 0,
+      "description": "Hard expiry in seconds from creation. Null means no hard expiry; decay policy still applies. Inheritable (invariant #2): if omitted, inherited from the lineage chain, falling back to the spec default null. Not part of the content hash."
+    },
+    "lineage": {
+      "oneOf": [
+        { "$ref": "#/$defs/nodeId" },
+        { "type": "null" }
+      ],
+      "description": "Parent node id in the inheritance chain. Null only for frame root nodes. Resolution walks upward through lineage until it reaches a frame node."
+    },
+    "tags": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Categorization tags. Used for CBQ filtering (tag:<value>) and frame ACLs (acl:<token-id>)."
+    },
+    "v": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Schema version / optimistic concurrency counter. Monotonically increasing. Used for CAS on upsert (G7)."
+    },
+    "prev": {
+      "oneOf": [
+        { "$ref": "#/$defs/nodeId" },
+        { "type": "null" }
+      ],
+      "description": "Id of the prior version of the same logical node. Implements append-mostly history per invariant #6. Distinct from the 'supersedes' edge type (G9). Null on first version."
+    }
+  },
+  "$defs": {
+    "nodeId": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{8,64}$",
+      "description": "BLAKE3-derived node identifier. 8-64 lowercase hex characters."
+    }
+  },
+  "examples": [
+    {
+      "id": "a7c3f1e2",
+      "type": "entity",
+      "val": "BTC",
+      "w": 0.9,
+      "decay": "epoch",
+      "ttl": null,
+      "lineage": "f0d2e8a1",
+      "tags": ["domain:trading", "asset:crypto"],
+      "v": 1,
+      "prev": null
+    },
+    {
+      "id": "b8d4e2f3",
+      "type": "entity",
+      "val": { "name": "Patient 4821", "mrn": "MRN-004821" },
+      "w": 1.0,
+      "decay": "none",
+      "ttl": null,
+      "lineage": "c1e5f9a2",
+      "tags": ["domain:clinical", "dept:cardiology"],
+      "v": 1,
+      "prev": null
+    },
+    {
+      "id": "c9e5f3a4",
+      "type": "state",
+      "val": { "service": "api-gateway", "status": "degraded", "latency_p99_ms": 2340 },
+      "w": 0.95,
+      "decay": "event",
+      "ttl": 300,
+      "lineage": "d2f6a0b5",
+      "tags": ["domain:devops", "severity:high"],
+      "v": 3,
+      "prev": "c9e5f3a3"
+    },
+    {
+      "id": "d0f6a4b5",
+      "type": "prior",
+      "val": { "regime": "risk_on", "confidence": 0.72 },
+      "w": 0.6,
+      "decay": "epoch",
+      "ttl": 3600,
+      "lineage": "a7c3f1e2",
+      "tags": ["domain:trading", "signal:regime"],
+      "v": 1,
+      "prev": null
+    },
+    {
+      "id": "e1a7b5c6",
+      "type": "frame",
+      "val": { "name": "patient_intake", "description": "Emergency department intake context" },
+      "w": 1.0,
+      "decay": "none",
+      "ttl": null,
+      "lineage": null,
+      "tags": ["domain:clinical", "workflow:intake"],
+      "v": 1,
+      "prev": null
+    },
+    {
+      "id": "f2b8c1d3",
+      "type": "state",
+      "val": { "momentum": "up" },
+      "lineage": "a7c3f1e2",
+      "tags": ["domain:trading", "metric:momentum"],
+      "v": 1,
+      "prev": null
+    }
+  ]
+}
