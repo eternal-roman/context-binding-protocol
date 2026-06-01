@@ -147,6 +147,27 @@ describe("CBP-001: DELETE /v1/node/:id ACL enforcement", () => {
     expect(res.statusCode).toBe(204);
     expect(server.store.getNode("del-allowed")).toBeUndefined();
   });
+
+  it("returns 404 (not 204) for a frameless node, even with a valid token (ACL-bypass regression)", async () => {
+    // A node not resolvable to any configured frame (orphan lineage) must NOT be
+    // deletable by an authenticated token. Previously the `frame && !checkAcl`
+    // short-circuit allowed it; the fix denies with 404, mirroring GET/PATCH.
+    server.store.loadNode({
+      id: "orphan-del",
+      type: "entity",
+      val: "OrphanNoFrame",
+      w: 0.5,
+      decay: "none",
+      ttl: null,
+      lineage: null,
+      tags: [],
+      v: 1,
+      prev: null,
+    });
+    const res = await injectAs(DENIED_TOKEN, "DELETE", "/v1/node/orphan-del");
+    expect(res.statusCode).toBe(404);
+    expect(server.store.getNode("orphan-del")).toBeDefined(); // not deleted
+  });
 });
 
 describe("CBP-001: POST /v1/frame/:id/eval ACL enforcement", () => {

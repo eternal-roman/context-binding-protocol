@@ -32,13 +32,13 @@ function priorNode(id: string, val: unknown): CbpNode {
 describe("conditional eval — fail-closed on missing data", () => {
   it("missing field under not() is dormant, not active (the bug)", () => {
     const cond = {
-      not: { field: "prior:missing.val.regime", op: "eq", value: "risk_off" },
+      not: { field: "prior:missing.val.renewal_outlook", op: "eq", value: "healthy" },
     };
     expect(evaluateCondition(cond, empty)).toBe(false);
   });
 
   it("missing field in a bare leaf is dormant", () => {
-    const cond = { field: "prior:missing.val.regime", op: "eq", value: "x" };
+    const cond = { field: "prior:missing.val.renewal_outlook", op: "eq", value: "x" };
     expect(evaluateCondition(cond, empty)).toBe(false);
   });
 
@@ -60,10 +60,10 @@ describe("conditional eval — fail-closed on missing data", () => {
 
   it("not() over a present, non-matching field is active", () => {
     const nodes = new Map<string, CbpNode>([
-      ["n1", priorNode("n1", { regime: "risk_on" })],
+      ["n1", priorNode("n1", { renewal_outlook: "at_risk" })],
     ]);
     const cond = {
-      not: { field: "prior:n1.val.regime", op: "eq", value: "risk_off" },
+      not: { field: "prior:n1.val.renewal_outlook", op: "eq", value: "healthy" },
     };
     expect(evaluateCondition(cond, nodes)).toBe(true);
   });
@@ -78,14 +78,14 @@ describe("conditional eval — field accessor <type>: prefix (A7)", () => {
   it("a type-mismatched accessor is indeterminate (dormant), not a silent match", () => {
     // n1 is a 'prior' node. Asserting state:n1 must NOT resolve as if it matched
     // — the accessor's type segment is part of the assertion, fail-closed.
-    const nodes = new Map<string, CbpNode>([["n1", priorNode("n1", { regime: "risk_on" })]]);
-    const cond = { field: "state:n1.val.regime", op: "eq", value: "risk_on" };
+    const nodes = new Map<string, CbpNode>([["n1", priorNode("n1", { renewal_outlook: "at_risk" })]]);
+    const cond = { field: "state:n1.val.renewal_outlook", op: "eq", value: "at_risk" };
     expect(evaluateCondition(cond, nodes)).toBe(false);
   });
 
   it("the correctly-typed accessor still resolves and activates", () => {
-    const nodes = new Map<string, CbpNode>([["n1", priorNode("n1", { regime: "risk_on" })]]);
-    const cond = { field: "prior:n1.val.regime", op: "eq", value: "risk_on" };
+    const nodes = new Map<string, CbpNode>([["n1", priorNode("n1", { renewal_outlook: "at_risk" })]]);
+    const cond = { field: "prior:n1.val.renewal_outlook", op: "eq", value: "at_risk" };
     expect(evaluateCondition(cond, nodes)).toBe(true);
   });
 });

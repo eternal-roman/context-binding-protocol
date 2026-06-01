@@ -70,12 +70,12 @@
     {
       "id": "a7c3f1e2",
       "type": "entity",
-      "val": "BTC",
+      "val": "Acme Corp",
       "w": 0.9,
       "decay": "epoch",
       "ttl": null,
       "lineage": "f0d2e8a1",
-      "tags": ["domain:trading", "asset:crypto"],
+      "tags": ["domain:accounts", "tier:enterprise"],
       "v": 1,
       "prev": null
     },
@@ -106,12 +106,12 @@
     {
       "id": "d0f6a4b5",
       "type": "prior",
-      "val": { "regime": "risk_on", "confidence": 0.72 },
+      "val": { "renewal_outlook": "at_risk", "confidence": 0.72 },
       "w": 0.6,
       "decay": "epoch",
       "ttl": 3600,
       "lineage": "a7c3f1e2",
-      "tags": ["domain:trading", "signal:regime"],
+      "tags": ["domain:accounts", "signal:renewal"],
       "v": 1,
       "prev": null
     },
@@ -130,9 +130,9 @@
     {
       "id": "f2b8c1d3",
       "type": "state",
-      "val": { "momentum": "up" },
+      "val": { "health_score": 0.61 },
       "lineage": "a7c3f1e2",
-      "tags": ["domain:trading", "metric:momentum"],
+      "tags": ["domain:accounts", "metric:health_score"],
       "v": 1,
       "prev": null
     }

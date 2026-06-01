@@ -15,7 +15,7 @@
  *    schema itself (using basic structural checks, not a full JSON
  *    Schema validator — that lands in v0.3 with ajv).
  * 5. Cross-domain examples enforcement: each schema's examples must
- *    include at least one example tagged with each of domain:trading,
+ *    include at least one example tagged with each of domain:accounts,
  *    domain:clinical, domain:devops.
  *
  * Exit codes:
@@ -30,7 +30,7 @@ const ROOT = process.cwd();
 const SPEC_DIR = join(ROOT, "spec", "schemas");
 const HTML_FILE = join(ROOT, "cbp-architecture.html");
 
-const REQUIRED_DOMAINS = ["domain:trading", "domain:clinical", "domain:devops"];
+const REQUIRED_DOMAINS = ["domain:accounts", "domain:clinical", "domain:devops"];
 
 let exitCode = 0;
 

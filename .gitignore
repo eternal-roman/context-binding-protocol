@@ -98,7 +98,10 @@ coverage/
 *.lcov
 .nyc_output/
 
-# --- Local working notes (not for federation) -------------------------------
+# --- Local working notes -----------------------------------------------------
 NOTES.local.md
 SCRATCH.md
 *.drafts/
+
+# --- AI planning / design specs (transient — keep local, never commit to a PR) -
+docs/superpowers/

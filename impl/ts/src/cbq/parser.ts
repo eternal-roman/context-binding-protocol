@@ -80,7 +80,7 @@ const COMPARISON_OPS = [">=", "<=", "!=", ">", "<", "="] as const;
 /**
  * Parse a CBQ query string into a structured query.
  *
- * @param input - The CBQ query string (e.g., "w>0.5,tag:regime,edges:active")
+ * @param input - The CBQ query string (e.g., "w>0.5,tag:renewal,edges:active")
  * @returns Parsed query with an array of predicates (AND-combined)
  * @throws CbqParseError on invalid syntax
  */

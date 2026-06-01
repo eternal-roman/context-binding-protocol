@@ -173,25 +173,25 @@ describe("canonicalize (RFC 8785)", () => {
       const node = {
         id: "a7c3f1e2",
         type: "entity",
-        val: "BTC",
+        val: "Acme Corp",
         w: 0.9,
         decay: "epoch",
         ttl: null,
         lineage: "f0d2e8a1",
-        tags: ["domain:trading", "asset:crypto"],
+        tags: ["domain:accounts", "tier:enterprise"],
         v: 1,
         prev: null,
       };
       const result = canonicalize(node);
       // Keys must be sorted
       expect(result).toBe(
-        '{"decay":"epoch","id":"a7c3f1e2","lineage":"f0d2e8a1","prev":null,"tags":["domain:trading","asset:crypto"],"ttl":null,"type":"entity","v":1,"val":"BTC","w":0.9}'
+        '{"decay":"epoch","id":"a7c3f1e2","lineage":"f0d2e8a1","prev":null,"tags":["domain:accounts","tier:enterprise"],"ttl":null,"type":"entity","v":1,"val":"Acme Corp","w":0.9}'
       );
     });
 
     it("produces identical output regardless of input key order", () => {
-      const a = { type: "entity", val: "BTC", lineage: null, tags: [] };
-      const b = { tags: [], lineage: null, type: "entity", val: "BTC" };
+      const a = { type: "entity", val: "Acme Corp", lineage: null, tags: [] };
+      const b = { tags: [], lineage: null, type: "entity", val: "Acme Corp" };
       expect(canonicalize(a)).toBe(canonicalize(b));
     });
   });

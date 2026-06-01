@@ -4,9 +4,9 @@ import { computeFullHash, deriveId, deriveUniqueId } from "../../src/graph/id.js
 describe("BLAKE3 id derivation (G1)", () => {
   const btcNode = {
     type: "entity" as const,
-    val: "BTC",
+    val: "Acme Corp",
     lineage: "f0d2e8a1",
-    tags: ["domain:trading"],
+    tags: ["domain:accounts"],
   };
 
   it("produces a 64-char hex string for the full hash", () => {
@@ -26,21 +26,21 @@ describe("BLAKE3 id derivation (G1)", () => {
   });
 
   it("is key-order independent (RFC 8785 canonicalization)", () => {
-    const a = { type: "entity" as const, val: "BTC", lineage: null, tags: [] };
-    const b = { tags: [], lineage: null, type: "entity" as const, val: "BTC" };
+    const a = { type: "entity" as const, val: "Acme Corp", lineage: null, tags: [] };
+    const b = { tags: [], lineage: null, type: "entity" as const, val: "Acme Corp" };
     expect(deriveId(a)).toBe(deriveId(b));
   });
 
   it("produces different ids for different content", () => {
-    const ethNode = { ...btcNode, val: "ETH" };
+    const ethNode = { ...btcNode, val: "Globex Inc" };
     expect(deriveId(btcNode)).not.toBe(deriveId(ethNode));
   });
 
   it("does NOT change id when metadata fields change", () => {
     // Metadata fields (w, decay, ttl, v, prev) are not hashed
     // We only pass content fields, so this test verifies the contract
-    const nodeA = { type: "entity" as const, val: "BTC", lineage: null, tags: [] };
-    const nodeB = { type: "entity" as const, val: "BTC", lineage: null, tags: [] };
+    const nodeA = { type: "entity" as const, val: "Acme Corp", lineage: null, tags: [] };
+    const nodeB = { type: "entity" as const, val: "Acme Corp", lineage: null, tags: [] };
     expect(deriveId(nodeA)).toBe(deriveId(nodeB));
   });
 

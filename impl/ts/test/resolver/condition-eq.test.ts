@@ -7,16 +7,16 @@ function priorNode(id: string, val: unknown): CbpNode {
 }
 
 describe("condition eq/ne — structural equality for object/array operands", () => {
-  const nodes = new Map<string, CbpNode>([["n1", priorNode("n1", { regime: "risk_on" })]]);
+  const nodes = new Map<string, CbpNode>([["n1", priorNode("n1", { renewal_outlook: "at_risk" })]]);
 
   it("eq matches an object field by value, not reference identity", () => {
-    expect(evaluateCondition({ field: "prior:n1.val", op: "eq", value: { regime: "risk_on" } }, nodes)).toBe(true);
-    expect(evaluateCondition({ field: "prior:n1.val", op: "eq", value: { regime: "risk_off" } }, nodes)).toBe(false);
+    expect(evaluateCondition({ field: "prior:n1.val", op: "eq", value: { renewal_outlook: "at_risk" } }, nodes)).toBe(true);
+    expect(evaluateCondition({ field: "prior:n1.val", op: "eq", value: { renewal_outlook: "healthy" } }, nodes)).toBe(false);
   });
 
   it("ne is the structural negation", () => {
-    expect(evaluateCondition({ field: "prior:n1.val", op: "ne", value: { regime: "risk_off" } }, nodes)).toBe(true);
-    expect(evaluateCondition({ field: "prior:n1.val", op: "ne", value: { regime: "risk_on" } }, nodes)).toBe(false);
+    expect(evaluateCondition({ field: "prior:n1.val", op: "ne", value: { renewal_outlook: "healthy" } }, nodes)).toBe(true);
+    expect(evaluateCondition({ field: "prior:n1.val", op: "ne", value: { renewal_outlook: "at_risk" } }, nodes)).toBe(false);
   });
 
   it("still compares primitives exactly (no coercion)", () => {

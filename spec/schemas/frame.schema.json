@@ -62,16 +62,16 @@
   },
   "examples": [
     {
-      "id": "crypto_macro",
-      "domain_tags": ["trading", "crypto", "macro"],
+      "id": "account_health",
+      "domain_tags": ["accounts", "customer-success"],
       "root_weight": 1.0,
       "root_decay": "epoch",
-      "refresh_policy": "event:price_update",
+      "refresh_policy": "event:usage_update",
       "max_token_budget": 400,
       "inheritance_mode": "prototypal",
       "conditional_edge_eval": "eager",
       "tokenizer": "o200k_base",
-      "acl_tags": ["acl:trading_desk_alpha"]
+      "acl_tags": ["acl:success_team_alpha"]
     },
     {
       "id": "patient_intake",

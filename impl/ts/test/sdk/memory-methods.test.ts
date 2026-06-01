@@ -13,18 +13,18 @@ describe("CbpClient memory methods", () => {
   it("ingests facts and recalls them scoped to its own frame", async () => {
     const c = new CbpClient({ frameConfig, writeAccess: true });
     await c.ingest([
-      { type: "state", val: "BTC price climbing", tags: ["live"], w: 0.9 },
+      { type: "state", val: "Acme Corp price climbing", tags: ["live"], w: 0.9 },
       { type: "prior", val: "Do not deploy on Fridays", tags: ["policy"], w: 0.8 },
     ]);
-    const ctx = await c.recall("bitcoin price");
+    const ctx = await c.recall("account usage price");
     expect(ctx.entries.length).toBeGreaterThan(0);
-    expect(ctx.entries.some((e) => e.text.includes("BTC price"))).toBe(true);
+    expect(ctx.entries.some((e) => e.text.includes("Acme Corp price"))).toBe(true);
     expect(ctx.tokensUsed).toBeLessThanOrEqual(frameConfig.max_token_budget);
   });
   it("ask returns the grounded context via the default Echo client", async () => {
     const c = new CbpClient({ frameConfig, writeAccess: true });
-    await c.ingest([{ type: "state", val: "BTC price climbing", w: 0.9, tags: [] }]);
-    const out = await c.ask("bitcoin price");
+    await c.ingest([{ type: "state", val: "Acme Corp price climbing", w: 0.9, tags: [] }]);
+    const out = await c.ask("account usage price");
     expect(out.answer).toContain(out.context.block);
   });
   it("recall on an empty store yields an empty block", async () => {

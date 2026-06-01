@@ -26,7 +26,7 @@ const frameNode: CbpNode = {
 const childNode: CbpNode = {
   id: "a7c3f1e2",
   type: "entity",
-  val: "BTC",
+  val: "Acme Corp",
   w: 0.9,
   decay: "epoch",
   ttl: null,

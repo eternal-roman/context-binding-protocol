@@ -7,7 +7,7 @@ import type { ResolvedNode } from "../../src/types/node.js";
 
 const tokenizer = getTokenizer("length_fallback");
 const node = (over: Partial<ResolvedNode> = {}): ResolvedNode => ({
-  id: "a7c3f1e2", type: "state", val: "BTC up", lineage: "f0d2e8a1", tags: ["domain:trading"],
+  id: "a7c3f1e2", type: "state", val: "Acme Corp up", lineage: "f0d2e8a1", tags: ["domain:accounts"],
   v: 1, prev: null, w: 0.7, decay: "none", ttl: null, ...over,
 });
 

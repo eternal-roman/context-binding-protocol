@@ -19,7 +19,7 @@ results for the same vector are non-conforming.
 ```
 spec/conformance/
 ├── README.md         # this file
-├── trading/          # algorithmic trading domain vectors
+├── accounts/         # B2B SaaS account-health domain vectors
 ├── clinical/         # clinical decision support vectors
 ├── devops/           # DevOps / incident response vectors
 └── legal/            # legal document analysis vectors
@@ -35,9 +35,9 @@ Each vector file is a JSON object with this structure:
 
 ```json
 {
-  "vector_id": "trading-001-basic-inheritance",
+  "vector_id": "accounts-001-basic-inheritance",
   "version": "0.3",
-  "domain": "trading",
+  "domain": "accounts",
   "description": "Basic prototypal inheritance from frame root through entity to state",
   "tags": ["inheritance", "prototypal", "entity", "state"],
   "input": {
@@ -73,7 +73,7 @@ Each vector file is a JSON object with this structure:
 |---|---|---|---|
 | `vector_id` | string | yes | Unique identifier: `<domain>-<number>-<slug>` |
 | `version` | string | yes | Conformance vector format version |
-| `domain` | string | yes | One of: `trading`, `clinical`, `devops`, `legal` |
+| `domain` | string | yes | One of: `accounts`, `clinical`, `devops`, `legal` |
 | `description` | string | yes | What this vector tests |
 | `tags` | string[] | yes | Categorization for selective test runs |
 | `input.frame` | FrameConfig | yes | Frame configuration |

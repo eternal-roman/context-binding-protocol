@@ -23,7 +23,7 @@ describe("GraphStore", () => {
     decay: "epoch",
     ttl: null,
     lineage: null,
-    tags: ["domain:trading"],
+    tags: ["domain:accounts"],
     v: 1,
     prev: null,
   };
@@ -31,7 +31,7 @@ describe("GraphStore", () => {
   const btcNode: CbpNode = {
     id: "a7c3f1e2",
     type: "entity",
-    val: "BTC",
+    val: "Acme Corp",
     w: 0.9,
     decay: "epoch",
     ttl: null,
@@ -56,12 +56,12 @@ describe("GraphStore", () => {
     it("derives id from content fields and returns node with v=1", () => {
       const result = store.insertNode({
         type: "entity",
-        val: "BTC",
+        val: "Acme Corp",
         w: 0.9,
         decay: "epoch",
         ttl: null,
         lineage: null,
-        tags: ["domain:trading"],
+        tags: ["domain:accounts"],
       });
       expect(result.id).toMatch(/^[0-9a-f]{8,}$/);
       expect(result.v).toBe(1);
@@ -150,7 +150,7 @@ describe("GraphStore", () => {
       const chain = store.walkLineage("b2c4d5e6");
       expect(chain.map((n) => n.id)).toEqual([
         "b2c4d5e6", // price state
-        "a7c3f1e2", // BTC entity
+        "a7c3f1e2", // Acme Corp entity
         "f0d2e8a1", // frame root
       ]);
     });
@@ -186,7 +186,7 @@ describe("GraphStore", () => {
     it("returns nodes whose lineage is the given id", () => {
       store.loadNode(frameNode);
       store.loadNode(btcNode);
-      const ethNode: CbpNode = { ...btcNode, id: "d4e5f6a7", val: "ETH" };
+      const ethNode: CbpNode = { ...btcNode, id: "d4e5f6a7", val: "Globex Inc" };
       store.loadNode(ethNode);
 
       const children = store.getChildren("f0d2e8a1");

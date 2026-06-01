@@ -5,11 +5,11 @@ import type { CbpNode } from "../../src/types/node.js";
 const frameNode: CbpNode = {
   id: "f0000001", type: "frame", val: { name: "test" },
   w: 1.0, decay: "epoch", ttl: null, lineage: null,
-  tags: ["domain:trading"], v: 1, prev: null,
+  tags: ["domain:accounts"], v: 1, prev: null,
 };
 
-const btcNode: CbpNode = {
-  id: "a0000001", type: "entity", val: "BTC",
+const acmeNode: CbpNode = {
+  id: "a0000001", type: "entity", val: "Acme Corp",
   w: 0.9, decay: "epoch", ttl: null, lineage: "f0000001",
   tags: [], v: 1, prev: null,
 };
@@ -17,14 +17,14 @@ const btcNode: CbpNode = {
 function makeClient(writeAccess = false): CbpClient {
   const client = new CbpClient({
     frameConfig: {
-      id: "test_frame", domain_tags: ["trading"], root_weight: 1.0,
+      id: "test_frame", domain_tags: ["accounts"], root_weight: 1.0,
       root_decay: "epoch", refresh_policy: "on_demand", max_token_budget: 2000,
       inheritance_mode: "prototypal", conditional_edge_eval: "eager",
       tokenizer: "length_fallback", acl_tags: [],
     },
     writeAccess,
   });
-  client.loadNodes([frameNode, btcNode]);
+  client.loadNodes([frameNode, acmeNode]);
   return client;
 }
 
@@ -34,9 +34,9 @@ describe("CbpClient (Embedded SDK, Mode 4)", () => {
       const client = makeClient();
       const resolved = client.resolve();
       expect(resolved.nodes).toHaveLength(2);
-      // BTC should inherit domain:trading tag from frame
-      const btc = resolved.nodes.find((n) => n.id === "a0000001");
-      expect(btc?.tags).toContain("domain:trading");
+      // Acme Corp should inherit domain:accounts tag from frame
+      const acme = resolved.nodes.find((n) => n.id === "a0000001");
+      expect(acme?.tags).toContain("domain:accounts");
     });
 
     it("resolves with CBQ query", () => {
@@ -95,7 +95,7 @@ describe("CbpClient (Embedded SDK, Mode 4)", () => {
     it("records a prior (agent output)", () => {
       const client = makeClient(true);
       const prior = client.recordPrior({
-        val: { action: "long", confidence: 0.74 },
+        val: { action: "flag_renewal_risk", confidence: 0.74 },
         parentId: "a0000001",
         tags: ["agent:decision"],
         decay: "event",
@@ -145,21 +145,21 @@ describe("CbpClient (Embedded SDK, Mode 4)", () => {
   describe("the spec example (Mode 4)", () => {
     it("reproduces the embedded SDK example from cbp-architecture.html §VI", () => {
       // From the spec:
-      // const ctx = new CBPClient('crypto_macro');
+      // const ctx = new CBPClient('account_health');
       // const frame = await ctx.resolve({ tier: 'condensed' });
-      // await ctx.upsert({ type: 'prior', lineage: 'entity:BTC', ... })
+      // await ctx.upsert({ type: 'prior', lineage: 'entity:Acme Corp', ... })
 
       const client = new CbpClient({
         frameConfig: {
-          id: "crypto_macro", domain_tags: ["trading", "crypto"],
-          root_weight: 1.0, root_decay: "epoch", refresh_policy: "event:price_update",
+          id: "account_health", domain_tags: ["accounts", "customer-success"],
+          root_weight: 1.0, root_decay: "epoch", refresh_policy: "event:usage_update",
           max_token_budget: 400, inheritance_mode: "prototypal",
           conditional_edge_eval: "eager", tokenizer: "length_fallback", acl_tags: [],
         },
         writeAccess: true,
       });
 
-      client.loadNodes([frameNode, btcNode]);
+      client.loadNodes([frameNode, acmeNode]);
 
       // Resolve the frame
       const resolved = client.resolve();
@@ -167,7 +167,7 @@ describe("CbpClient (Embedded SDK, Mode 4)", () => {
 
       // Agent takes action, records result as prior
       const prior = client.recordPrior({
-        val: { action: "long", confidence: 0.74 },
+        val: { action: "flag_renewal_risk", confidence: 0.74 },
         parentId: "a0000001",
         decay: "event",
         ttl: 7200,

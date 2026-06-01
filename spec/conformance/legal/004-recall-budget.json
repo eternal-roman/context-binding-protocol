@@ -9,7 +9,7 @@
     "nodes": [
       { "id": "f0000001", "type": "frame", "val": { "name": "contracts" }, "w": 1.0, "decay": "epoch", "ttl": null, "lineage": null, "tags": [], "v": 1, "prev": null },
       { "id": "a0000001", "type": "state", "val": "the contract indemnification clause caps total liability", "w": 0.9, "decay": "epoch", "ttl": null, "lineage": "f0000001", "tags": [], "v": 1, "prev": null },
-      { "id": "a0000002", "type": "state", "val": "bitcoin price is climbing fast today", "w": 0.8, "decay": "epoch", "ttl": null, "lineage": "f0000001", "tags": [], "v": 1, "prev": null }
+      { "id": "a0000002", "type": "state", "val": "the office relocation is planned for next spring", "w": 0.8, "decay": "epoch", "ttl": null, "lineage": "f0000001", "tags": [], "v": 1, "prev": null }
     ],
     "edges": []
   },

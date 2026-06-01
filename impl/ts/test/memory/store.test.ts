@@ -44,21 +44,21 @@ describe("InMemoryMemoryStore.query", () => {
   it("ranks by cosine to the query embedding and respects k", async () => {
     const e = new HashingEmbedder(256);
     const s = new InMemoryMemoryStore();
-    await s.upsert(rec("aaaaaaaa", { embedding: await e.embed("bitcoin price climbing") }));
+    await s.upsert(rec("aaaaaaaa", { embedding: await e.embed("account usage climbing") }));
     await s.upsert(rec("bbbbbbbb", { embedding: await e.embed("patient blood pressure vitals") }));
-    const out = await s.query({ embedding: await e.embed("bitcoin price rising"), k: 1 });
+    const out = await s.query({ embedding: await e.embed("account usage rising"), k: 1 });
     expect(out).toHaveLength(1);
     expect(out[0]?.rec.id).toBe("aaaaaaaa");
   });
   it("filters by tag (AND)", async () => {
     const s = new InMemoryMemoryStore();
-    await s.upsert(rec("aaaaaaaa", { tags: ["domain:trading", "live"] }));
+    await s.upsert(rec("aaaaaaaa", { tags: ["domain:accounts", "live"] }));
     await s.upsert(rec("bbbbbbbb", { tags: ["domain:clinical", "live"] }));
-    const out = await s.query({ tags: ["domain:trading"] });
+    const out = await s.query({ tags: ["domain:accounts"] });
     expect(out.map((r) => r.rec.id)).toEqual(["aaaaaaaa"]);
-    const both = await s.query({ tags: ["domain:trading", "live"] });
+    const both = await s.query({ tags: ["domain:accounts", "live"] });
     expect(both.map((r) => r.rec.id)).toEqual(["aaaaaaaa"]);
-    const none = await s.query({ tags: ["domain:trading", "missing"] });
+    const none = await s.query({ tags: ["domain:accounts", "missing"] });
     expect(none).toHaveLength(0);
   });
   it("falls back to structural weight ordering when no query vector is given", async () => {

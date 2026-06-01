@@ -13,8 +13,8 @@ function loadVector(domain: string, file: string): Record<string, unknown> {
 }
 
 describe("Resolver — conformance vectors", () => {
-  describe("trading/001-basic-inheritance", () => {
-    const vector = loadVector("trading", "001-basic-inheritance.json");
+  describe("accounts/001-basic-inheritance", () => {
+    const vector = loadVector("accounts", "001-basic-inheritance.json");
     const input = vector.input as FrameInput;
     const ops = vector.operations as Array<Record<string, unknown>>;
 
@@ -24,7 +24,7 @@ describe("Resolver — conformance vectors", () => {
       const expected = expectedOp?.expected as Record<string, unknown>;
       const expectedNodes = expected.nodes as Array<Record<string, unknown>>;
 
-      // All nodes should have inherited domain:trading tag from frame root
+      // All nodes should have inherited the domain:accounts tag from frame root
       for (const expectedNode of expectedNodes) {
         const actual = resolved.nodes.find((n) => n.id === expectedNode.id);
         expect(actual).toBeDefined();
@@ -36,7 +36,7 @@ describe("Resolver — conformance vectors", () => {
       }
     });
 
-    it("CBQ weight filter: w>0.9 returns frame root + BTC entity + momentum state", () => {
+    it("CBQ weight filter: w>0.9 returns frame root + Acme Corp entity + health-score state", () => {
       const expectedOp = ops[1];
       const expected = expectedOp?.expected as Record<string, unknown>;
       const expectedNodes = expected.nodes as Array<{ id: string }>;
@@ -49,12 +49,12 @@ describe("Resolver — conformance vectors", () => {
     });
   });
 
-  describe("trading/002-conditional-edges", () => {
-    const vector = loadVector("trading", "002-conditional-edges.json");
+  describe("accounts/002-conditional-edges", () => {
+    const vector = loadVector("accounts", "002-conditional-edges.json");
     const input = vector.input as FrameInput;
     const ops = vector.operations as Array<Record<string, unknown>>;
 
-    it("BTC-ETH correlates edge is ACTIVE when regime=risk_on", () => {
+    it("Acme-Globex correlates edge is ACTIVE when renewal_outlook=at_risk", () => {
       const resolved = resolveFrame(input);
       const expectedOp = ops[0];
       const expected = expectedOp?.expected as Record<string, unknown>;
@@ -183,7 +183,7 @@ describe("Resolver — condition evaluation", () => {
       {
         id: "e5f6a7b8",
         type: "prior" as const,
-        val: { regime: "risk_on" },
+        val: { renewal_outlook: "at_risk" },
         w: 0.6,
         decay: "epoch" as const,
         ttl: 3600,
@@ -201,18 +201,18 @@ describe("Resolver — condition evaluation", () => {
 
   it("evaluates eq leaf correctly", () => {
     const condition = {
-      field: "prior:e5f6a7b8.val.regime",
+      field: "prior:e5f6a7b8.val.renewal_outlook",
       op: "eq" as const,
-      value: "risk_on",
+      value: "at_risk",
     };
     expect(evaluateCondition(condition, nodes)).toBe(true);
   });
 
   it("evaluates ne leaf correctly", () => {
     const condition = {
-      field: "prior:e5f6a7b8.val.regime",
+      field: "prior:e5f6a7b8.val.renewal_outlook",
       op: "ne" as const,
-      value: "risk_off",
+      value: "healthy",
     };
     expect(evaluateCondition(condition, nodes)).toBe(true);
   });
@@ -220,7 +220,7 @@ describe("Resolver — condition evaluation", () => {
   it("evaluates 'all' (AND)", () => {
     const condition = {
       all: [
-        { field: "prior:e5f6a7b8.val.regime", op: "eq" as const, value: "risk_on" },
+        { field: "prior:e5f6a7b8.val.renewal_outlook", op: "eq" as const, value: "at_risk" },
         { field: "prior:e5f6a7b8.w", op: "gt" as const, value: 0.5 },
       ],
     };
@@ -230,7 +230,7 @@ describe("Resolver — condition evaluation", () => {
   it("evaluates 'any' (OR)", () => {
     const condition = {
       any: [
-        { field: "prior:e5f6a7b8.val.regime", op: "eq" as const, value: "risk_off" },
+        { field: "prior:e5f6a7b8.val.renewal_outlook", op: "eq" as const, value: "healthy" },
         { field: "prior:e5f6a7b8.w", op: "gt" as const, value: 0.5 },
       ],
     };
@@ -240,9 +240,9 @@ describe("Resolver — condition evaluation", () => {
   it("evaluates 'not'", () => {
     const condition = {
       not: {
-        field: "prior:e5f6a7b8.val.regime",
+        field: "prior:e5f6a7b8.val.renewal_outlook",
         op: "eq" as const,
-        value: "risk_off",
+        value: "healthy",
       },
     };
     expect(evaluateCondition(condition, nodes)).toBe(true);
@@ -250,7 +250,7 @@ describe("Resolver — condition evaluation", () => {
 
   it("evaluates 'exists' on present field", () => {
     const condition = {
-      field: "prior:e5f6a7b8.val.regime",
+      field: "prior:e5f6a7b8.val.renewal_outlook",
       op: "exists" as const,
     };
     expect(evaluateCondition(condition, nodes)).toBe(true);
@@ -266,9 +266,9 @@ describe("Resolver — condition evaluation", () => {
 
   it("returns false for missing node reference", () => {
     const condition = {
-      field: "prior:missing.val.regime",
+      field: "prior:missing.val.renewal_outlook",
       op: "eq" as const,
-      value: "risk_on",
+      value: "at_risk",
     };
     expect(evaluateCondition(condition, nodes)).toBe(false);
   });

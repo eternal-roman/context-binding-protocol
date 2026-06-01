@@ -25,8 +25,8 @@ const baseServerConfig: ServerConfig = {
 };
 
 const openFrame: FrameConfig = {
-  id: "crypto_macro",
-  domain_tags: ["trading"],
+  id: "account_health",
+  domain_tags: ["accounts"],
   root_weight: 1,
   root_decay: "none",
   refresh_policy: "on_demand",
@@ -46,12 +46,12 @@ const restrictedFrame: FrameConfig = {
 const frameRoot: CbpNode = {
   id: "f0d2e8a1",
   type: "frame",
-  val: { name: "crypto_macro" },
+  val: { name: "account_health" },
   w: 1,
   decay: "none",
   ttl: null,
   lineage: null,
-  tags: ["domain:trading"],
+  tags: ["domain:accounts"],
   v: 1,
   prev: null,
 };
@@ -59,7 +59,7 @@ const frameRoot: CbpNode = {
 const btcEntity: CbpNode = {
   id: "a7c3f1e2",
   type: "entity",
-  val: "BTC",
+  val: "Acme Corp",
   w: 0.9,
   decay: "epoch",
   ttl: null,
@@ -156,7 +156,7 @@ describe("GET /v1/frame/:id/export (v0.5)", () => {
   });
 
   it("returns nodes and edges in the stored shape (no 'active' on edges)", async () => {
-    const res = await injectAs(server, OPEN_TOKEN, "GET", "/v1/frame/crypto_macro/export");
+    const res = await injectAs(server, OPEN_TOKEN, "GET", "/v1/frame/account_health/export");
     expect(res.statusCode).toBe(200);
     const body = JSON.parse(res.body) as {
       frame_id: string;
@@ -164,7 +164,7 @@ describe("GET /v1/frame/:id/export (v0.5)", () => {
       nodes: CbpNode[];
       edges: CbpEdge[];
     };
-    expect(body.frame_id).toBe("crypto_macro");
+    expect(body.frame_id).toBe("account_health");
     expect(body.exported_at).toMatch(/^\d{4}-\d{2}-\d{2}T/);
     expect(body.nodes).toHaveLength(3);
     expect(body.edges).toHaveLength(1);
@@ -198,12 +198,12 @@ describe("POST /v1/frame/:id/import (v0.5)", () => {
 
   it("accepts a well-formed import and inserts atomically", async () => {
     const payload = {
-      frame_id: "crypto_macro",
+      frame_id: "account_health",
       exported_at: "2026-04-17T00:00:00Z",
       nodes: [frameRoot, btcEntity, priceState],
       edges: [conditionalEdge],
     };
-    const res = await injectAs(server, OPEN_TOKEN, "POST", "/v1/frame/crypto_macro/import", payload);
+    const res = await injectAs(server, OPEN_TOKEN, "POST", "/v1/frame/account_health/import", payload);
     expect(res.statusCode).toBe(200);
     const body = JSON.parse(res.body) as {
       nodes_accepted: number;
@@ -226,7 +226,7 @@ describe("POST /v1/frame/:id/import (v0.5)", () => {
       ],
       edges: [],
     };
-    const res = await injectAs(server, OPEN_TOKEN, "POST", "/v1/frame/crypto_macro/import", payload);
+    const res = await injectAs(server, OPEN_TOKEN, "POST", "/v1/frame/account_health/import", payload);
     expect(res.statusCode).toBe(422);
     const body = JSON.parse(res.body) as {
       nodes_accepted: number;
@@ -249,7 +249,7 @@ describe("POST /v1/frame/:id/import (v0.5)", () => {
       nodes: [frameRoot, btcEntity],
       edges: [orphanEdge],
     };
-    const res = await injectAs(server, OPEN_TOKEN, "POST", "/v1/frame/crypto_macro/import", payload);
+    const res = await injectAs(server, OPEN_TOKEN, "POST", "/v1/frame/account_health/import", payload);
     expect(res.statusCode).toBe(422);
     expect(server.store.getNode("a7c3f1e2")).toBeUndefined(); // rollback
   });
@@ -257,7 +257,7 @@ describe("POST /v1/frame/:id/import (v0.5)", () => {
   it("returns 422 when lineage references an unknown id", async () => {
     const orphanNode: CbpNode = { ...btcEntity, lineage: "deadbeef" };
     const payload = { nodes: [frameRoot, orphanNode], edges: [] };
-    const res = await injectAs(server, OPEN_TOKEN, "POST", "/v1/frame/crypto_macro/import", payload);
+    const res = await injectAs(server, OPEN_TOKEN, "POST", "/v1/frame/account_health/import", payload);
     expect(res.statusCode).toBe(422);
   });
 
@@ -266,15 +266,15 @@ describe("POST /v1/frame/:id/import (v0.5)", () => {
       nodes: [frameRoot, btcEntity],
       edges: [],
     };
-    const r1 = await injectAs(server, OPEN_TOKEN, "POST", "/v1/frame/crypto_macro/import", payload);
+    const r1 = await injectAs(server, OPEN_TOKEN, "POST", "/v1/frame/account_health/import", payload);
     expect(r1.statusCode).toBe(200);
-    const r2 = await injectAs(server, OPEN_TOKEN, "POST", "/v1/frame/crypto_macro/import", payload);
+    const r2 = await injectAs(server, OPEN_TOKEN, "POST", "/v1/frame/account_health/import", payload);
     expect(r2.statusCode).toBe(200);
     expect(server.store.getAllNodes()).toHaveLength(2);
   });
 
   it("returns 400 when nodes or edges are missing", async () => {
-    const res = await injectAs(server, OPEN_TOKEN, "POST", "/v1/frame/crypto_macro/import", {
+    const res = await injectAs(server, OPEN_TOKEN, "POST", "/v1/frame/account_health/import", {
       nodes: [],
       // missing edges
     });
@@ -288,7 +288,7 @@ describe("POST /v1/frame/:id/import (v0.5)", () => {
   });
 
   it("rejects nodes whose lineage does not terminate at the imported frame (ACL-bypass regression)", async () => {
-    // Attack vector: a caller authenticated for `crypto_macro` tries to plant
+    // Attack vector: a caller authenticated for `account_health` tries to plant
     // nodes that claim lineage into the `restricted` frame (to which they do
     // not have ACL). Without frame-root validation, these nodes would land in
     // the store and surface in /eval of the restricted frame.
@@ -324,7 +324,7 @@ describe("POST /v1/frame/:id/import (v0.5)", () => {
       server,
       OPEN_TOKEN,
       "POST",
-      "/v1/frame/crypto_macro/import",
+      "/v1/frame/account_health/import",
       payload
     );
     expect(res.statusCode).toBe(422);
@@ -373,7 +373,7 @@ describe("POST /v1/frame/:id/import (v0.5)", () => {
       server,
       OPEN_TOKEN,
       "POST",
-      "/v1/frame/crypto_macro/import",
+      "/v1/frame/account_health/import",
       payload
     );
     expect(res.statusCode).toBe(422);
@@ -395,7 +395,7 @@ describe("export -> import -> export round-trip (v0.5)", () => {
       serverA,
       OPEN_TOKEN,
       "GET",
-      "/v1/frame/crypto_macro/export"
+      "/v1/frame/account_health/export"
     );
     expect(exportARes.statusCode).toBe(200);
     const exportA = JSON.parse(exportARes.body) as {
@@ -413,7 +413,7 @@ describe("export -> import -> export round-trip (v0.5)", () => {
       serverB,
       OPEN_TOKEN,
       "POST",
-      "/v1/frame/crypto_macro/import",
+      "/v1/frame/account_health/import",
       { nodes: exportA.nodes, edges: exportA.edges }
     );
     expect(importRes.statusCode).toBe(200);
@@ -421,7 +421,7 @@ describe("export -> import -> export round-trip (v0.5)", () => {
       serverB,
       OPEN_TOKEN,
       "GET",
-      "/v1/frame/crypto_macro/export"
+      "/v1/frame/account_health/export"
     );
     const exportB = JSON.parse(exportBRes.body) as {
       nodes: CbpNode[];

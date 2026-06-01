@@ -17,11 +17,11 @@ describe("LlmExtractor", () => {
   it("parses facts (fence-tolerant) and dedups across chunks by normalized val", async () => {
     const doc = ["para one".repeat(10), "para two".repeat(10)].join("\n\n");
     const llm = new ScriptedLlm([
-      '```json\n[{"type":"state","val":"BTC is up","w":0.9}]\n```',
-      '[{"type":"state","val":"btc is up"},{"type":"prior","val":"Do not deploy Fridays","tags":["policy"]}]',
+      '```json\n[{"type":"state","val":"Acme is up","w":0.9}]\n```',
+      '[{"type":"state","val":"acme is up"},{"type":"prior","val":"Do not deploy Fridays","tags":["policy"]}]',
     ]);
     const out = await new LlmExtractor(llm, { maxChars: 50, maxChunks: 8 }).extract(doc);
-    expect(out.facts.map((f) => f.val)).toEqual(["BTC is up", "Do not deploy Fridays"]); // dup "btc is up" dropped
+    expect(out.facts.map((f) => f.val)).toEqual(["Acme is up", "Do not deploy Fridays"]); // dup "acme is up" dropped
     expect(out.stats.failedChunks).toBe(0);
   });
   it("skips a failed chunk without aborting the run", async () => {

@@ -22,17 +22,17 @@ describe("CAS history (CBP-004)", () => {
     it("changing val creates a new node with a new id", () => {
       const original = store.insertNode({
         type: "entity",
-        val: "BTC",
+        val: "Acme Corp",
         w: 0.9,
         decay: "epoch",
         ttl: null,
         lineage: null,
-        tags: ["domain:trading"],
+        tags: ["domain:accounts"],
       });
 
       const updated = store.upsertNode(
         original.id,
-        { val: "ETH" },
+        { val: "Globex Inc" },
         original.v
       );
 
@@ -43,17 +43,17 @@ describe("CAS history (CBP-004)", () => {
       // v must be bumped
       expect(updated.v).toBe(original.v + 1);
       // Content must reflect the update
-      expect(updated.val).toBe("ETH");
+      expect(updated.val).toBe("Globex Inc");
       // Metadata should carry over
       expect(updated.w).toBe(0.9);
       expect(updated.decay).toBe("epoch");
-      expect(updated.tags).toEqual(["domain:trading"]);
+      expect(updated.tags).toEqual(["domain:accounts"]);
     });
 
     it("changing type creates a new node with a new id", () => {
       const original = store.insertNode({
         type: "entity",
-        val: "BTC",
+        val: "Acme Corp",
         w: 0.9,
         decay: "epoch",
         ttl: null,
@@ -75,7 +75,7 @@ describe("CAS history (CBP-004)", () => {
     it("changing tags creates a new node with a new id", () => {
       const original = store.insertNode({
         type: "entity",
-        val: "BTC",
+        val: "Acme Corp",
         w: 0.9,
         decay: "epoch",
         ttl: null,
@@ -107,7 +107,7 @@ describe("CAS history (CBP-004)", () => {
 
       const original = store.insertNode({
         type: "entity",
-        val: "BTC",
+        val: "Acme Corp",
         w: 0.9,
         decay: "epoch",
         ttl: null,
@@ -129,7 +129,7 @@ describe("CAS history (CBP-004)", () => {
     it("preserves old node in store after content mutation (append-mostly)", () => {
       const original = store.insertNode({
         type: "entity",
-        val: "BTC",
+        val: "Acme Corp",
         w: 0.9,
         decay: "epoch",
         ttl: null,
@@ -139,7 +139,7 @@ describe("CAS history (CBP-004)", () => {
 
       const updated = store.upsertNode(
         original.id,
-        { val: "ETH" },
+        { val: "Globex Inc" },
         original.v
       );
 
@@ -152,8 +152,8 @@ describe("CAS history (CBP-004)", () => {
       }
       expect(oldNode.id).toBe(original.id);
       expect(newNode.id).toBe(updated.id);
-      expect(oldNode.val).toBe("BTC");
-      expect(newNode.val).toBe("ETH");
+      expect(oldNode.val).toBe("Acme Corp");
+      expect(newNode.val).toBe("Globex Inc");
 
       // Store should have one more node than before
       // (parent frame if any + original + new = depends on setup)
@@ -199,7 +199,7 @@ describe("CAS history (CBP-004)", () => {
     it("changing w keeps the same id and updates in place", () => {
       const original = store.insertNode({
         type: "entity",
-        val: "BTC",
+        val: "Acme Corp",
         w: 0.9,
         decay: "epoch",
         ttl: null,
@@ -229,7 +229,7 @@ describe("CAS history (CBP-004)", () => {
     it("changing decay keeps the same id", () => {
       const original = store.insertNode({
         type: "entity",
-        val: "BTC",
+        val: "Acme Corp",
         w: 0.9,
         decay: "epoch",
         ttl: null,
@@ -250,7 +250,7 @@ describe("CAS history (CBP-004)", () => {
     it("changing ttl keeps the same id", () => {
       const original = store.insertNode({
         type: "entity",
-        val: "BTC",
+        val: "Acme Corp",
         w: 0.9,
         decay: "epoch",
         ttl: null,
@@ -271,7 +271,7 @@ describe("CAS history (CBP-004)", () => {
     it("changing multiple metadata fields keeps the same id", () => {
       const original = store.insertNode({
         type: "entity",
-        val: "BTC",
+        val: "Acme Corp",
         w: 0.9,
         decay: "epoch",
         ttl: null,
@@ -296,7 +296,7 @@ describe("CAS history (CBP-004)", () => {
     it("content + metadata change together creates a new node", () => {
       const original = store.insertNode({
         type: "entity",
-        val: "BTC",
+        val: "Acme Corp",
         w: 0.9,
         decay: "epoch",
         ttl: null,
@@ -306,7 +306,7 @@ describe("CAS history (CBP-004)", () => {
 
       const updated = store.upsertNode(
         original.id,
-        { val: "ETH", w: 0.5 },
+        { val: "Globex Inc", w: 0.5 },
         original.v
       );
 
@@ -315,7 +315,7 @@ describe("CAS history (CBP-004)", () => {
       expect(updated.prev).toBe(original.id);
       // Metadata from the update is applied
       expect(updated.w).toBe(0.5);
-      expect(updated.val).toBe("ETH");
+      expect(updated.val).toBe("Globex Inc");
 
       // Both nodes in store
       expect(store.getNode(original.id)).toBeDefined();

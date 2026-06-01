@@ -1,13 +1,13 @@
 {
-  "vector_id": "trading-001-basic-inheritance",
+  "vector_id": "accounts-001-basic-inheritance",
   "version": "0.3",
-  "domain": "trading",
-  "description": "Basic prototypal inheritance from frame root through entity to state nodes. BTC entity inherits w and decay from the frame root. Price state overrides w but inherits decay. Momentum state inherits everything.",
+  "domain": "accounts",
+  "description": "Basic prototypal inheritance from frame root through entity to state nodes. The Acme Corp account inherits w and decay from the frame root. The MRR state overrides w but inherits decay. The health-score state inherits everything.",
   "tags": ["inheritance", "prototypal", "entity", "state"],
   "input": {
     "frame": {
-      "id": "crypto_macro",
-      "domain_tags": ["trading", "crypto", "macro"],
+      "id": "account_health",
+      "domain_tags": ["accounts", "customer-success"],
       "root_weight": 1.0,
       "root_decay": "epoch",
       "max_token_budget": 400,
@@ -19,19 +19,19 @@
       {
         "id": "f0d2e8a1",
         "type": "frame",
-        "val": { "name": "crypto_macro" },
+        "val": { "name": "account_health" },
         "w": 1.0,
         "decay": "epoch",
         "ttl": null,
         "lineage": null,
-        "tags": ["domain:trading"],
+        "tags": ["domain:accounts"],
         "v": 1,
         "prev": null
       },
       {
         "id": "a7c3f1e2",
         "type": "entity",
-        "val": "BTC",
+        "val": "Acme Corp",
         "w": 1.0,
         "decay": "epoch",
         "ttl": null,
@@ -43,7 +43,7 @@
       {
         "id": "b2c4d5e6",
         "type": "state",
-        "val": { "price": 68420 },
+        "val": { "mrr": 48200 },
         "w": 0.9,
         "decay": "event",
         "ttl": null,
@@ -55,7 +55,7 @@
       {
         "id": "c3d5e6f7",
         "type": "state",
-        "val": { "momentum": 0.72 },
+        "val": { "health_score": 0.72 },
         "w": 1.0,
         "decay": "epoch",
         "ttl": null,
@@ -77,48 +77,48 @@
           {
             "id": "f0d2e8a1",
             "type": "frame",
-            "val": { "name": "crypto_macro" },
+            "val": { "name": "account_health" },
             "w": 1.0,
             "decay": "epoch",
             "ttl": null,
             "lineage": null,
-            "tags": ["domain:trading"],
+            "tags": ["domain:accounts"],
             "v": 1,
             "prev": null
           },
           {
             "id": "a7c3f1e2",
             "type": "entity",
-            "val": "BTC",
+            "val": "Acme Corp",
             "w": 1.0,
             "decay": "epoch",
             "ttl": null,
             "lineage": "f0d2e8a1",
-            "tags": ["domain:trading"],
+            "tags": ["domain:accounts"],
             "v": 1,
             "prev": null
           },
           {
             "id": "b2c4d5e6",
             "type": "state",
-            "val": { "price": 68420 },
+            "val": { "mrr": 48200 },
             "w": 0.9,
             "decay": "event",
             "ttl": null,
             "lineage": "a7c3f1e2",
-            "tags": ["domain:trading"],
+            "tags": ["domain:accounts"],
             "v": 3,
             "prev": null
           },
           {
             "id": "c3d5e6f7",
             "type": "state",
-            "val": { "momentum": 0.72 },
+            "val": { "health_score": 0.72 },
             "w": 1.0,
             "decay": "epoch",
             "ttl": null,
             "lineage": "a7c3f1e2",
-            "tags": ["domain:trading"],
+            "tags": ["domain:accounts"],
             "v": 1,
             "prev": null
           }
@@ -128,7 +128,7 @@
     },
     {
       "op": "query",
-      "description": "Filter to nodes with w > 0.9 — should return frame root, BTC entity, and momentum state (all w=1.0)",
+      "description": "Filter to nodes with w > 0.9 — should return frame root, Acme Corp entity, and health-score state (all w=1.0)",
       "params": { "cbq": "w>0.9" },
       "expected": {
         "nodes": [

@@ -45,18 +45,18 @@ describe("end-to-end ingestion → recall", () => {
       lineage: null,
       tags: ["domain:test"],
     });
-    const btc = client.store.insertNode({
+    const acme = client.store.insertNode({
       type: "entity",
-      val: "BTC",
+      val: "Acme Corp",
       w: 0.9,
       decay: "epoch",
       ttl: null,
       lineage: root.id,
       tags: [],
     });
-    const eth = client.store.insertNode({
+    const globex = client.store.insertNode({
       type: "entity",
-      val: "ETH",
+      val: "Globex Inc",
       w: 0.8,
       decay: "epoch",
       ttl: null,
@@ -69,14 +69,14 @@ describe("end-to-end ingestion → recall", () => {
       w: 0.7,
       decay: "event",
       ttl: null,
-      lineage: btc.id, // leaf under BTC, no edges
+      lineage: acme.id, // leaf under Acme Corp, no edges
       tags: [],
     });
 
     const edge: CbpEdge = {
       id: "ed000001",
-      src: btc.id,
-      tgt: eth.id,
+      src: acme.id,
+      tgt: globex.id,
       rel: "correlates",
       strength: 0.85,
       conditional: "always",
@@ -110,9 +110,9 @@ describe("end-to-end ingestion → recall", () => {
       expect(idSet.has(e.tgt)).toBe(true);
     }
 
-    // inheritance flowed: BTC inherits the domain:test tag from the root
-    const btcResolved = resolved.nodes.find((n) => n.id === btc.id);
-    expect(btcResolved?.tags).toContain("domain:test");
+    // inheritance flowed: Acme Corp inherits the domain:test tag from the root
+    const acmeResolved = resolved.nodes.find((n) => n.id === acme.id);
+    expect(acmeResolved?.tags).toContain("domain:test");
 
     // --- Recall at every tier: each fits the token budget (invariant #1) ---
     for (const tier of ["full", "condensed", "signal"] as const) {

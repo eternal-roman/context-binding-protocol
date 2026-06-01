@@ -136,8 +136,8 @@ function compareResolved(op: string, resolved: unknown, value: unknown): boolean
   switch (op) {
     // eq/ne are NON-throwing (a cross-type comparison is a DECIDED result, not a
     // malformed-condition error) and use STRUCTURAL equality so an object/array
-    // field compares by value, not reference identity — `{regime:"x"} eq
-    // {regime:"x"}` is true. Primitives still compare exactly (no coercion).
+    // field compares by value, not reference identity — `{renewal_outlook:"x"} eq
+    // {renewal_outlook:"x"}` is true. Primitives still compare exactly (no coercion).
     case "eq":
       return deepEqual(resolved, value);
     case "ne":
@@ -244,7 +244,7 @@ function deepEqual(a: unknown, b: unknown, depth = 0): boolean {
  * Resolve a field accessor against the node set.
  *
  * Format: <type>:<id>.<field>[.<subfield>...]
- * Example: prior:e5f6a7b8.val.regime
+ * Example: prior:e5f6a7b8.val.renewal_outlook
  *
  * Returns undefined if the node or field path doesn't exist.
  */

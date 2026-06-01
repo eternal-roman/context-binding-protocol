@@ -43,14 +43,14 @@ describe("CBQ parser (G6)", () => {
   });
 
   describe("tag predicates", () => {
-    it("parses tag:regime", () => {
-      const q = parseCbq("tag:regime");
-      expect(q.predicates).toEqual([{ kind: "tag", tag: "regime" }]);
+    it("parses tag:renewal", () => {
+      const q = parseCbq("tag:renewal");
+      expect(q.predicates).toEqual([{ kind: "tag", tag: "renewal" }]);
     });
 
-    it("parses tag:domain:trading (colon in tag value)", () => {
-      const q = parseCbq("tag:domain:trading");
-      expect(q.predicates).toEqual([{ kind: "tag", tag: "domain:trading" }]);
+    it("parses tag:domain:accounts (colon in tag value)", () => {
+      const q = parseCbq("tag:domain:accounts");
+      expect(q.predicates).toEqual([{ kind: "tag", tag: "domain:accounts" }]);
     });
 
     it("throws on empty tag", () => {
@@ -88,8 +88,8 @@ describe("CBQ parser (G6)", () => {
     });
 
     it("parses root with human-readable id (frame ids)", () => {
-      const q = parseCbq("root:BTC");
-      expect(q.predicates).toEqual([{ kind: "root", nodeId: "BTC" }]);
+      const q = parseCbq("root:Acme");
+      expect(q.predicates).toEqual([{ kind: "root", nodeId: "Acme" }]);
     });
   });
 
@@ -138,24 +138,24 @@ describe("CBQ parser (G6)", () => {
 
   describe("combined queries", () => {
     it("parses multiple comma-separated predicates", () => {
-      const q = parseCbq("w>0.5,tag:regime,edges:active");
+      const q = parseCbq("w>0.5,tag:renewal,edges:active");
       expect(q.predicates).toHaveLength(3);
       expect(q.predicates[0]).toEqual({ kind: "weight", op: ">", value: 0.5 });
-      expect(q.predicates[1]).toEqual({ kind: "tag", tag: "regime" });
+      expect(q.predicates[1]).toEqual({ kind: "tag", tag: "renewal" });
       expect(q.predicates[2]).toEqual({ kind: "edges", filter: "active" });
     });
 
-    it("parses the v0.1 spec example: root:BTC,depth:2,edges:active", () => {
-      const q = parseCbq("root:BTC,depth:2,edges:active");
+    it("parses the v0.1 spec example: root:Acme,depth:2,edges:active", () => {
+      const q = parseCbq("root:Acme,depth:2,edges:active");
       expect(q.predicates).toEqual([
-        { kind: "root", nodeId: "BTC" },
+        { kind: "root", nodeId: "Acme" },
         { kind: "depth", value: 2 },
         { kind: "edges", filter: "active" },
       ]);
     });
 
     it("handles whitespace around commas", () => {
-      const q = parseCbq("w>0.5 , tag:regime");
+      const q = parseCbq("w>0.5 , tag:renewal");
       expect(q.predicates).toHaveLength(2);
     });
   });

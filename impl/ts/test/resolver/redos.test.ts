@@ -72,13 +72,13 @@ describe("safeMatch — linear-time, no catastrophic backtracking (S2)", () => {
 
 describe("safeMatch — feature preserved for legitimate patterns (S2)", () => {
   it("anchored prefix matches", () => {
-    expect(safeMatch("^BTC", "BTC-USD")).toBe(true);
-    expect(safeMatch("^BTC", "X-BTC")).toBe(false);
+    expect(safeMatch("^Acme", "Acme-USD")).toBe(true);
+    expect(safeMatch("^Acme", "X-Acme")).toBe(false);
   });
 
   it("alternation matches", () => {
-    expect(safeMatch("risk_(on|off)", "regime:risk_on")).toBe(true);
-    expect(safeMatch("risk_(on|off)", "regime:neutral")).toBe(false);
+    expect(safeMatch("(at_risk|healthy)", "renewal:at_risk")).toBe(true);
+    expect(safeMatch("(at_risk|healthy)", "renewal:neutral")).toBe(false);
   });
 
   it("character classes and quantifiers match", () => {
@@ -106,16 +106,16 @@ describe("matches operator end-to-end via evaluateCondition (S2)", () => {
 
   it("activates on a legitimate pattern match", () => {
     const ok = evaluateCondition(
-      { field: "entity:n1.val", op: "matches", value: "risk_(on|off)" },
-      nodeSet("risk_on")
+      { field: "entity:n1.val", op: "matches", value: "(at_risk|healthy)" },
+      nodeSet("at_risk")
     );
     expect(ok).toBe(true);
   });
 
   it("does not activate on a non-matching pattern", () => {
     const ok = evaluateCondition(
-      { field: "entity:n1.val", op: "matches", value: "^ETH$" },
-      nodeSet("BTC")
+      { field: "entity:n1.val", op: "matches", value: "^Globex Inc$" },
+      nodeSet("Acme Corp")
     );
     expect(ok).toBe(false);
   });
