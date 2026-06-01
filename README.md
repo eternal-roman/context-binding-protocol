@@ -1,5 +1,7 @@
 # Context Binding Protocol (CBP)
 
+[![Lint and Test](https://github.com/eternal-roman/context-binding-protocol/actions/workflows/lint-and-test.yml/badge.svg?branch=main)](https://github.com/eternal-roman/context-binding-protocol/actions/workflows/lint-and-test.yml)
+
 > An experimental, MIT-licensed format and TypeScript reference library for
 > delivering structured, state-conditioned, token-budgeted context to LLMs.
 
